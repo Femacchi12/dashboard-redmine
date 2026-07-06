@@ -1,0 +1,308 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  background: #050706;
+  color: #f4f7f5;
+}
+
+.dashboard {
+  width: min(1400px, 94%);
+  margin: 0 auto;
+  padding: 32px 0;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  align-items: flex-start;
+  margin-bottom: 28px;
+}
+
+.badge {
+  display: inline-block;
+  color: #14f195;
+  background: rgba(20, 241, 149, 0.08);
+  border: 1px solid rgba(20, 241, 149, 0.25);
+  padding: 7px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  letter-spacing: 1px;
+  margin-bottom: 14px;
+}
+
+h1 {
+  font-size: 36px;
+  margin: 0 0 8px;
+}
+
+p {
+  margin: 0;
+  color: #9ca3af;
+}
+
+.update-box {
+  min-width: 190px;
+  background: #0d1110;
+  border: 1px solid #1c2722;
+  border-radius: 16px;
+  padding: 16px;
+  text-align: right;
+}
+
+.update-box span {
+  display: block;
+  color: #8b949e;
+  font-size: 12px;
+}
+
+.update-box strong {
+  display: block;
+  margin-top: 6px;
+  color: #14f195;
+}
+
+.filters {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 14px;
+  background: #0b0f0d;
+  border: 1px solid #1b2621;
+  padding: 16px;
+  border-radius: 18px;
+  margin-bottom: 20px;
+}
+
+.filters-extended {
+  grid-template-columns: 2fr repeat(6, 1fr);
+}
+
+label {
+  display: block;
+  color: #8b949e;
+  font-size: 12px;
+  margin-bottom: 8px;
+}
+
+input,
+select {
+  width: 100%;
+  background: #111714;
+  color: #f4f7f5;
+  border: 1px solid #26352d;
+  border-radius: 12px;
+  padding: 11px 12px;
+  outline: none;
+}
+
+input:focus,
+select:focus {
+  border-color: #14f195;
+}
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.kpi-card {
+  background: linear-gradient(180deg, #101612, #0b0f0d);
+  border: 1px solid #1b2621;
+  border-radius: 18px;
+  padding: 18px;
+}
+
+.kpi-card span {
+  color: #8b949e;
+  font-size: 13px;
+}
+
+.kpi-card strong {
+  display: block;
+  font-size: 30px;
+  margin-top: 10px;
+  color: #ffffff;
+}
+
+.content-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.panel {
+  background: #0b0f0d;
+  border: 1px solid #1b2621;
+  border-radius: 18px;
+  padding: 18px;
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.panel-header h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.panel-header span {
+  color: #8b949e;
+  font-size: 13px;
+}
+
+.bar-chart {
+  display: grid;
+  gap: 12px;
+}
+
+.bar-row {
+  display: grid;
+  grid-template-columns: 130px 1fr 40px;
+  gap: 12px;
+  align-items: center;
+}
+
+.bar-label {
+  color: #d1d5db;
+  font-size: 13px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.bar-track {
+  height: 10px;
+  background: #151d19;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.bar-fill {
+  height: 100%;
+  background: #14f195;
+  border-radius: 999px;
+}
+
+.bar-value {
+  color: #9ca3af;
+  font-size: 13px;
+  text-align: right;
+}
+
+.table-wrapper {
+  overflow: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 1300px;
+}
+
+th,
+td {
+  padding: 12px;
+  border-bottom: 1px solid #18211d;
+  text-align: left;
+  font-size: 13px;
+  vertical-align: top;
+}
+
+th {
+  color: #14f195;
+  font-weight: 600;
+  background: #0f1512;
+  position: sticky;
+  top: 0;
+}
+
+td {
+  color: #e5e7eb;
+}
+
+.tag {
+  display: inline-block;
+  padding: 5px 9px;
+  border-radius: 999px;
+  font-size: 12px;
+  background: #151d19;
+  border: 1px solid #27372f;
+}
+
+.tag.new,
+.tag.nuevo {
+  color: #93c5fd;
+}
+
+.tag.resolved,
+.tag.resuelto {
+  color: #14f195;
+}
+
+.tag.high,
+.tag.urgent {
+  color: #ffcc66;
+}
+
+.tag.reeplantear,
+.tag.replantear {
+  color: #fbbf24;
+}
+
+.tag.en-revision {
+  color: #c084fc;
+}
+
+.tag.en-progreso {
+  color: #60a5fa;
+}
+
+.tag.cancelado,
+.tag.cancelled {
+  color: #f87171;
+}
+
+@media (max-width: 1200px) {
+  .filters-extended {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 1000px) {
+  .header,
+  .content-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .header {
+    display: block;
+  }
+
+  .update-box {
+    margin-top: 16px;
+    text-align: left;
+  }
+}
+
+@media (max-width: 700px) {
+  .filters-extended,
+  .kpi-grid {
+    grid-template-columns: 1fr;
+  }
+}

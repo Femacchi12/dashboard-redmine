@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard TKs Redmine</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <main class="dashboard">
+
+    <header class="header">
+      <div>
+        <div class="badge">FIBRAZO · PRODUCT / GROWTH</div>
+        <h1>Dashboard TKs Redmine</h1>
+        <p>Seguimiento de tickets, prioridades, estados, creadores e impacto operativo.</p>
+      </div>
+
+      <div class="update-box">
+        <span>Datos actualizados</span>
+        <strong id="lastUpdate">Cargando...</strong>
+      </div>
+    </header>
+
+    <section class="filters filters-extended">
+      <div>
+        <label>Buscar</label>
+        <input id="searchInput" type="text" placeholder="Buscar por título, objetivo, TK, creador o asignado..." />
+      </div>
+
+      <div>
+        <label>Plataforma</label>
+        <select id="platformFilter">
+          <option value="">Todas</option>
+        </select>
+      </div>
+
+      <div>
+        <label>Impacto</label>
+        <select id="impactFilter">
+          <option value="">Todos</option>
+        </select>
+      </div>
+
+      <div>
+        <label>Prioridad Redmine</label>
+        <select id="priorityFilter">
+          <option value="">Todas</option>
+        </select>
+      </div>
+
+      <div>
+        <label>Estado Redmine</label>
+        <select id="redmineStatusFilter">
+          <option value="">Todos</option>
+        </select>
+      </div>
+
+      <div>
+        <label>Estado operativo</label>
+        <select id="statusFilter">
+          <option value="">Todos</option>
+        </select>
+      </div>
+
+      <div>
+        <label>Creador</label>
+        <select id="creatorFilter">
+          <option value="">Todos</option>
+        </select>
+      </div>
+    </section>
+
+    <section class="kpi-grid">
+      <article class="kpi-card">
+        <span>Total tickets</span>
+        <strong id="kpiTotal">0</strong>
+      </article>
+
+      <article class="kpi-card">
+        <span>Nuevos</span>
+        <strong id="kpiNew">0</strong>
+      </article>
+
+      <article class="kpi-card">
+        <span>Resueltos</span>
+        <strong id="kpiResolved">0</strong>
+      </article>
+
+      <article class="kpi-card">
+        <span>Alta prioridad</span>
+        <strong id="kpiHigh">0</strong>
+      </article>
+
+      <article class="kpi-card">
+        <span>Envejecimiento promedio</span>
+        <strong id="kpiAvgAge">0 días</strong>
+      </article>
+    </section>
+
+    <section class="content-grid">
+      <article class="panel">
+        <div class="panel-header">
+          <h2>Tickets por estado operativo</h2>
+        </div>
+        <div id="statusChart" class="bar-chart"></div>
+      </article>
+
+      <article class="panel">
+        <div class="panel-header">
+          <h2>Tickets por prioridad Redmine</h2>
+        </div>
+        <div id="priorityChart" class="bar-chart"></div>
+      </article>
+    </section>
+
+    <section class="content-grid">
+      <article class="panel">
+        <div class="panel-header">
+          <h2>Tickets por estado Redmine</h2>
+        </div>
+        <div id="redmineStatusChart" class="bar-chart"></div>
+      </article>
+
+      <article class="panel">
+        <div class="panel-header">
+          <h2>Tickets por creador</h2>
+        </div>
+        <div id="creatorChart" class="bar-chart"></div>
+      </article>
+    </section>
+
+    <section class="panel">
+      <div class="panel-header">
+        <h2>Detalle de tickets</h2>
+        <span id="tableCount">0 registros</span>
+      </div>
+
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>TK Padre</th>
+              <th>TK Hijo</th>
+              <th>Fecha</th>
+              <th>Edad</th>
+              <th>Plataforma</th>
+              <th>Impacto</th>
+              <th>Complejidad</th>
+              <th>Tipo Redmine</th>
+              <th>Título</th>
+              <th>Prioridad Redmine</th>
+              <th>Estado Redmine</th>
+              <th>Estado Operativo</th>
+              <th>Creador</th>
+              <th>Asignado a</th>
+            </tr>
+          </thead>
+          <tbody id="ticketsTable"></tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
