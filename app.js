@@ -194,33 +194,17 @@ function clearFilters() {
 function updateKPIs(data) {
   const total = data.length;
 
-  const newTickets = data.filter(t =>
-    t.estadoOperativo.toLowerCase().includes("nuevo")
+  const newRedmine = data.filter(t =>
+    t.estadoRedmine.toLowerCase().includes("new")
   ).length;
 
-  const resolvedTickets = data.filter(t =>
-    t.estadoOperativo.toLowerCase().includes("resuelto")
+  const resolvedRedmine = data.filter(t =>
+    t.estadoRedmine.toLowerCase().includes("resolved")
   ).length;
-
-  const highTickets = data.filter(t =>
-    ["high", "urgent"].includes(t.prioridad.toLowerCase())
-  ).length;
-
-  const ticketsWithAge = data.filter(t => t.edad > 0);
-
-  const avgAge =
-    ticketsWithAge.length === 0
-      ? 0
-      : Math.round(
-          ticketsWithAge.reduce((sum, t) => sum + t.edad, 0) /
-          ticketsWithAge.length
-        );
 
   document.getElementById("kpiTotal").textContent = total;
-  document.getElementById("kpiNew").textContent = newTickets;
-  document.getElementById("kpiResolved").textContent = resolvedTickets;
-  document.getElementById("kpiHigh").textContent = highTickets;
-  document.getElementById("kpiAvgAge").textContent = `${avgAge} días`;
+  document.getElementById("kpiNewRedmine").textContent = newRedmine;
+  document.getElementById("kpiResolvedRedmine").textContent = resolvedRedmine;
 }
 
 function renderStatusChart(data) {
