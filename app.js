@@ -18,10 +18,13 @@ const clearFiltersBtn = document.getElementById("clearFiltersBtn");
 
 async function initDashboard() {
   try {
-    // El cacheBust ayuda a que al refrescar el dashboard busque una versión nueva del Sheet.
     const response = await fetch(`${SHEET_URL}&cacheBust=${Date.now()}`, {
       cache: "no-store"
     });
+
+    if (!response.ok) {
+      throw new Error(`Error HTTP ${response.status}`);
+    }
 
     const csvText = await response.text();
 
@@ -41,7 +44,7 @@ async function initDashboard() {
 
   } catch (error) {
     console.error("Error cargando datos:", error);
-    alert("No se pudieron cargar los datos del Google Sheet. Revisa permisos del Sheet.");
+    alert("No se pudieron cargar los datos del Google Sheet. Revisa permisos del Sheet o caché del navegador.");
   }
 }
 
@@ -195,11 +198,11 @@ function updateKPIs(data) {
   const total = data.length;
 
   const newRedmine = data.filter(t =>
-    t.estadoRedmine.toLowerCase().includes("new")
+    t.estadoRedmine.trim().toLowerCase() === "new"
   ).length;
 
   const resolvedRedmine = data.filter(t =>
-    t.estadoRedmine.toLowerCase().includes("resolved")
+    t.estadoRedmine.trim().toLowerCase() === "resolved"
   ).length;
 
   document.getElementById("kpiTotal").textContent = total;
