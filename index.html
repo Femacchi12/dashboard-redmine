@@ -26,7 +26,7 @@
     <section class="filters filters-extended">
       <div>
         <label>Buscar</label>
-        <input id="searchInput" type="text" placeholder="Buscar por título, objetivo, TK, creador o asignado..." />
+        <input id="searchInput" type="text" placeholder="Buscar por título, objetivo, TK o creador..." />
       </div>
 
       <div>
@@ -69,6 +69,11 @@
         <select id="creatorFilter">
           <option value="">Todos</option>
         </select>
+      </div>
+
+      <div class="filter-actions">
+        <label>Acciones</label>
+        <button id="clearFiltersBtn" type="button">Limpiar filtros</button>
       </div>
     </section>
 
@@ -125,9 +130,9 @@
 
       <article class="panel">
         <div class="panel-header">
-          <h2>Tickets por creador</h2>
+          <h2>Tickets por impacto</h2>
         </div>
-        <div id="creatorChart" class="bar-chart"></div>
+        <div id="impactChart" class="bar-chart"></div>
       </article>
     </section>
 
@@ -142,19 +147,16 @@
           <thead>
             <tr>
               <th>TK Padre</th>
-              <th>TK Hijo</th>
               <th>Fecha</th>
               <th>Edad</th>
               <th>Plataforma</th>
               <th>Impacto</th>
-              <th>Complejidad</th>
-              <th>Tipo Redmine</th>
+              <th>Tipo</th>
               <th>Título</th>
               <th>Prioridad Redmine</th>
               <th>Estado Redmine</th>
               <th>Estado Operativo</th>
               <th>Creador</th>
-              <th>Asignado a</th>
             </tr>
           </thead>
           <tbody id="ticketsTable"></tbody>

@@ -1,6 +1,10 @@
 const SHEET_URL =
   "https://docs.google.com/spreadsheets/d/1dMNdIcdRSjGE5RZmBN-ygSmu4O4S6060jd4pkq33-qE/gviz/tq?tqx=out:csv&gid=1553715397";
 
+// Cambia esta URL si tu Redmine usa otro dominio.
+// La estructura esperada es: https://TU-REDMINE/issues/13489
+const REDMINE_BASE_URL = "https://redmine.fibrazo.com/issues/";
+
 let allTickets = [];
 
 const searchInput = document.getElementById("searchInput");
@@ -10,10 +14,15 @@ const priorityFilter = document.getElementById("priorityFilter");
 const redmineStatusFilter = document.getElementById("redmineStatusFilter");
 const statusFilter = document.getElementById("statusFilter");
 const creatorFilter = document.getElementById("creatorFilter");
+const clearFiltersBtn = document.getElementById("clearFiltersBtn");
 
 async function initDashboard() {
   try {
-    const response = await fetch(SHEET_URL);
+    // El cacheBust ayuda a que al refrescar el dashboard busque una versión nueva del Sheet.
+    const response = await fetch(`${SHEET_URL}&cacheBust=${Date.now()}`, {
+      cache: "no-store"
+    });
+
     const csvText = await response.text();
 
     allTickets = csvToObjects(csvText)
@@ -166,8 +175,20 @@ function applyFilters() {
   renderStatusChart(filtered);
   renderPriorityChart(filtered);
   renderRedmineStatusChart(filtered);
-  renderCreatorChart(filtered);
+  renderImpactChart(filtered);
   renderTable(filtered);
+}
+
+function clearFilters() {
+  searchInput.value = "";
+  platformFilter.value = "";
+  impactFilter.value = "";
+  priorityFilter.value = "";
+  redmineStatusFilter.value = "";
+  statusFilter.value = "";
+  creatorFilter.value = "";
+
+  applyFilters();
 }
 
 function updateKPIs(data) {
@@ -214,8 +235,8 @@ function renderRedmineStatusChart(data) {
   renderBarChart("redmineStatusChart", countBy(data, "estadoRedmine"));
 }
 
-function renderCreatorChart(data) {
-  renderBarChart("creatorChart", countBy(data, "creador"));
+function renderImpactChart(data) {
+  renderBarChart("impactChart", countBy(data, "impacto"));
 }
 
 function countBy(data, field) {
@@ -261,24 +282,37 @@ function renderTable(data) {
       const row = document.createElement("tr");
 
       row.innerHTML = `
-        <td>${escapeHtml(ticket.tkPadre)}</td>
-        <td>${escapeHtml(ticket.tkHijo)}</td>
+        <td>${renderTicketLink(ticket.tkPadre)}</td>
         <td>${escapeHtml(ticket.fecha)}</td>
         <td>${ticket.edad || ""}</td>
         <td>${escapeHtml(ticket.plataforma)}</td>
         <td>${escapeHtml(ticket.impacto)}</td>
-        <td>${escapeHtml(ticket.complejidad)}</td>
         <td>${escapeHtml(ticket.tipoRedmine)}</td>
         <td>${escapeHtml(ticket.titulo)}</td>
         <td><span class="tag ${getTagClass(ticket.prioridad)}">${escapeHtml(ticket.prioridad)}</span></td>
         <td><span class="tag ${getTagClass(ticket.estadoRedmine)}">${escapeHtml(ticket.estadoRedmine)}</span></td>
         <td><span class="tag ${getTagClass(ticket.estadoOperativo)}">${escapeHtml(ticket.estadoOperativo)}</span></td>
         <td>${escapeHtml(ticket.creador)}</td>
-        <td>${escapeHtml(ticket.asignadoA)}</td>
       `;
 
       tbody.appendChild(row);
     });
+}
+
+function renderTicketLink(ticketNumber) {
+  const cleanTicket = String(ticketNumber || "").trim();
+
+  if (!cleanTicket || cleanTicket === "------" || cleanTicket === "--------") {
+    return "";
+  }
+
+  const url = `${REDMINE_BASE_URL}${encodeURIComponent(cleanTicket)}`;
+
+  return `
+    <a class="ticket-link" href="${url}" target="_blank" rel="noopener noreferrer">
+      ${escapeHtml(cleanTicket)}
+    </a>
+  `;
 }
 
 function getTagClass(value) {
@@ -306,5 +340,6 @@ priorityFilter.addEventListener("change", applyFilters);
 redmineStatusFilter.addEventListener("change", applyFilters);
 statusFilter.addEventListener("change", applyFilters);
 creatorFilter.addEventListener("change", applyFilters);
+clearFiltersBtn.addEventListener("click", clearFilters);
 
 initDashboard();

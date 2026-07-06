@@ -78,7 +78,7 @@ p {
 }
 
 .filters-extended {
-  grid-template-columns: 2fr repeat(6, 1fr);
+  grid-template-columns: 2fr repeat(6, 1fr) 0.9fr;
 }
 
 label {
@@ -102,6 +102,21 @@ select {
 input:focus,
 select:focus {
   border-color: #14f195;
+}
+
+button {
+  width: 100%;
+  background: rgba(20, 241, 149, 0.12);
+  color: #14f195;
+  border: 1px solid rgba(20, 241, 149, 0.35);
+  border-radius: 12px;
+  padding: 11px 12px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+button:hover {
+  background: rgba(20, 241, 149, 0.2);
 }
 
 .kpi-grid {
@@ -208,7 +223,7 @@ select:focus {
 table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 1300px;
+  min-width: 1100px;
 }
 
 th,
@@ -217,7 +232,6 @@ td {
   border-bottom: 1px solid #18211d;
   text-align: left;
   font-size: 13px;
-  vertical-align: top;
 }
 
 th {
@@ -230,6 +244,16 @@ th {
 
 td {
   color: #e5e7eb;
+}
+
+.ticket-link {
+  color: #14f195;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.ticket-link:hover {
+  text-decoration: underline;
 }
 
 .tag {
@@ -269,23 +293,15 @@ td {
   color: #60a5fa;
 }
 
-.tag.cancelado,
-.tag.cancelled {
-  color: #f87171;
-}
-
 @media (max-width: 1200px) {
   .filters-extended {
     grid-template-columns: 1fr 1fr;
-  }
-
-  .kpi-grid {
-    grid-template-columns: repeat(2, 1fr);
   }
 }
 
 @media (max-width: 1000px) {
   .header,
+  .kpi-grid,
   .content-grid {
     grid-template-columns: 1fr;
   }
@@ -298,11 +314,14 @@ td {
     margin-top: 16px;
     text-align: left;
   }
+
+  .kpi-grid {
+    display: grid;
+  }
 }
 
 @media (max-width: 700px) {
-  .filters-extended,
-  .kpi-grid {
+  .filters-extended {
     grid-template-columns: 1fr;
   }
 }
