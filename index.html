@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dashboard TKs Redmine</title>
-  <link rel="stylesheet" href="styles.css?v=5.1" />
+  <link rel="stylesheet" href="styles.css?v=6" />
 </head>
 <body>
 
@@ -31,44 +31,32 @@
 
       <div>
         <label>Plataforma</label>
-        <select id="platformFilter">
-          <option value="">Todas</option>
-        </select>
+        <div id="platformFilter" class="multi-select" data-placeholder="Todas"></div>
       </div>
 
       <div>
         <label>Impacto</label>
-        <select id="impactFilter">
-          <option value="">Todos</option>
-        </select>
+        <div id="impactFilter" class="multi-select" data-placeholder="Todos"></div>
       </div>
 
       <div>
         <label>Prioridad Redmine</label>
-        <select id="priorityFilter">
-          <option value="">Todas</option>
-        </select>
+        <div id="priorityFilter" class="multi-select" data-placeholder="Todas"></div>
       </div>
 
       <div>
         <label>Estado Redmine</label>
-        <select id="redmineStatusFilter">
-          <option value="">Todos</option>
-        </select>
+        <div id="redmineStatusFilter" class="multi-select" data-placeholder="Todos"></div>
       </div>
 
       <div>
         <label>Estado operativo</label>
-        <select id="statusFilter">
-          <option value="">Todos</option>
-        </select>
+        <div id="statusFilter" class="multi-select" data-placeholder="Todos"></div>
       </div>
 
       <div>
         <label>Creador</label>
-        <select id="creatorFilter">
-          <option value="">Todos</option>
-        </select>
+        <div id="creatorFilter" class="multi-select" data-placeholder="Todos"></div>
       </div>
 
       <div class="filter-actions">
@@ -86,6 +74,11 @@
       <article class="kpi-card">
         <span>New Redmine</span>
         <strong id="kpiNewRedmine">0</strong>
+      </article>
+
+      <article class="kpi-card">
+        <span>Otros Redmine</span>
+        <strong id="kpiOtherRedmine">0</strong>
       </article>
 
       <article class="kpi-card">
@@ -136,17 +129,17 @@
         <table>
           <thead>
             <tr>
-              <th>TK Padre</th>
-              <th>Fecha</th>
-              <th>Edad</th>
-              <th>Plataforma</th>
-              <th>Impacto</th>
-              <th>Tipo</th>
-              <th>Título</th>
-              <th>Prioridad Redmine</th>
-              <th>Estado Redmine</th>
-              <th>Estado Operativo</th>
-              <th>Creador</th>
+              <th data-sort="tkPadre">TK Padre</th>
+              <th data-sort="fecha">Fecha de creación</th>
+              <th data-sort="edad">Envejecimiento (días)</th>
+              <th data-sort="plataforma">Plataforma</th>
+              <th data-sort="impacto">Impacto</th>
+              <th data-sort="tipoRedmine">Tipo</th>
+              <th data-sort="titulo">Título</th>
+              <th data-sort="prioridad">Prioridad Redmine</th>
+              <th data-sort="estadoRedmine">Estado Redmine</th>
+              <th data-sort="estadoOperativo">Estado Operativo</th>
+              <th data-sort="creador">Creador</th>
             </tr>
           </thead>
           <tbody id="ticketsTable"></tbody>
@@ -156,6 +149,6 @@
 
   </main>
 
-  <script src="app.js?v=5.1"></script>
+  <script src="app.js?v=6"></script>
 </body>
 </html>

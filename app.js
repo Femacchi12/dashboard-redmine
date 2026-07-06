@@ -3,18 +3,56 @@ const SHEET_URL =
 
 // Cambia esta URL si tu Redmine usa otro dominio.
 // La estructura esperada es: https://TU-REDMINE/issues/13489
-const REDMINE_BASE_URL = "https://redmine.fibrazo.com/issues/";
+const REDMINE_BASE_URL = "https://redmine.fibrazo.com.co/issues/";
 
 let allTickets = [];
+let currentFilteredTickets = [];
+let sortState = {
+  field: "edad",
+  direction: "desc"
+};
 
 const searchInput = document.getElementById("searchInput");
-const platformFilter = document.getElementById("platformFilter");
-const impactFilter = document.getElementById("impactFilter");
-const priorityFilter = document.getElementById("priorityFilter");
-const redmineStatusFilter = document.getElementById("redmineStatusFilter");
-const statusFilter = document.getElementById("statusFilter");
-const creatorFilter = document.getElementById("creatorFilter");
 const clearFiltersBtn = document.getElementById("clearFiltersBtn");
+
+const filters = {
+  platform: {
+    element: document.getElementById("platformFilter"),
+    field: "plataforma",
+    placeholder: "Todas",
+    selected: []
+  },
+  impact: {
+    element: document.getElementById("impactFilter"),
+    field: "impacto",
+    placeholder: "Todos",
+    selected: []
+  },
+  priority: {
+    element: document.getElementById("priorityFilter"),
+    field: "prioridad",
+    placeholder: "Todas",
+    selected: []
+  },
+  redmineStatus: {
+    element: document.getElementById("redmineStatusFilter"),
+    field: "estadoRedmine",
+    placeholder: "Todos",
+    selected: []
+  },
+  status: {
+    element: document.getElementById("statusFilter"),
+    field: "estadoOperativo",
+    placeholder: "Todos",
+    selected: []
+  },
+  creator: {
+    element: document.getElementById("creatorFilter"),
+    field: "creador",
+    placeholder: "Todos",
+    selected: []
+  }
+};
 
 async function initDashboard() {
   try {
@@ -36,7 +74,7 @@ async function initDashboard() {
       )
       .map(normalizeTicket);
 
-    fillFilters();
+    buildAllMultiSelects();
     applyFilters();
 
     document.getElementById("lastUpdate").textContent =
@@ -121,23 +159,91 @@ function normalizeTicket(ticket) {
   };
 }
 
-function fillFilters() {
-  fillSelect(platformFilter, uniqueValues(allTickets, "plataforma"));
-  fillSelect(impactFilter, uniqueValues(allTickets, "impacto"));
-  fillSelect(priorityFilter, uniqueValues(allTickets, "prioridad"));
-  fillSelect(redmineStatusFilter, uniqueValues(allTickets, "estadoRedmine"));
-  fillSelect(statusFilter, uniqueValues(allTickets, "estadoOperativo"));
-  fillSelect(creatorFilter, uniqueValues(allTickets, "creador"));
-}
-
-function fillSelect(select, values) {
-  values.forEach(value => {
-    const option = document.createElement("option");
-    option.value = value;
-    option.textContent = value;
-    select.appendChild(option);
+function buildAllMultiSelects() {
+  Object.values(filters).forEach(filter => {
+    const values = uniqueValues(allTickets, filter.field);
+    buildMultiSelect(filter, values);
   });
 }
+
+function buildMultiSelect(filter, values) {
+  filter.element.innerHTML = "";
+
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "multi-select-button";
+  button.innerHTML = `<span>${filter.placeholder}</span>`;
+
+  const menu = document.createElement("div");
+  menu.className = "multi-select-menu";
+
+  values.forEach(value => {
+    const option = document.createElement("label");
+    option.className = "multi-option";
+
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.value = value;
+
+    checkbox.addEventListener("change", () => {
+      filter.selected = getCheckedValues(menu);
+      updateMultiSelectLabel(filter);
+      applyFilters();
+    });
+
+    const text = document.createElement("span");
+    text.textContent = value;
+
+    option.appendChild(checkbox);
+    option.appendChild(text);
+    menu.appendChild(option);
+  });
+
+  button.addEventListener("click", event => {
+    event.stopPropagation();
+    closeOtherMultiSelects(filter.element);
+    filter.element.classList.toggle("open");
+  });
+
+  menu.addEventListener("click", event => {
+    event.stopPropagation();
+  });
+
+  filter.element.appendChild(button);
+  filter.element.appendChild(menu);
+  updateMultiSelectLabel(filter);
+}
+
+function getCheckedValues(menu) {
+  return [...menu.querySelectorAll("input[type='checkbox']:checked")]
+    .map(input => input.value);
+}
+
+function updateMultiSelectLabel(filter) {
+  const label = filter.element.querySelector(".multi-select-button span");
+
+  if (filter.selected.length === 0) {
+    label.textContent = filter.placeholder;
+  } else if (filter.selected.length === 1) {
+    label.textContent = filter.selected[0];
+  } else {
+    label.textContent = `${filter.selected.length} seleccionados`;
+  }
+}
+
+function closeOtherMultiSelects(currentElement) {
+  Object.values(filters).forEach(filter => {
+    if (filter.element !== currentElement) {
+      filter.element.classList.remove("open");
+    }
+  });
+}
+
+document.addEventListener("click", () => {
+  Object.values(filters).forEach(filter => {
+    filter.element.classList.remove("open");
+  });
+});
 
 function uniqueValues(data, field) {
   return [...new Set(data.map(item => item[field]).filter(Boolean))].sort();
@@ -145,12 +251,6 @@ function uniqueValues(data, field) {
 
 function applyFilters() {
   const search = searchInput.value.toLowerCase();
-  const platform = platformFilter.value;
-  const impact = impactFilter.value;
-  const priority = priorityFilter.value;
-  const redmineStatus = redmineStatusFilter.value;
-  const operativeStatus = statusFilter.value;
-  const creator = creatorFilter.value;
 
   const filtered = allTickets.filter(ticket => {
     const text = `
@@ -165,14 +265,16 @@ function applyFilters() {
 
     return (
       text.includes(search) &&
-      (!platform || ticket.plataforma === platform) &&
-      (!impact || ticket.impacto === impact) &&
-      (!priority || ticket.prioridad === priority) &&
-      (!redmineStatus || ticket.estadoRedmine === redmineStatus) &&
-      (!operativeStatus || ticket.estadoOperativo === operativeStatus) &&
-      (!creator || ticket.creador === creator)
+      matchesMultiFilter(ticket, filters.platform) &&
+      matchesMultiFilter(ticket, filters.impact) &&
+      matchesMultiFilter(ticket, filters.priority) &&
+      matchesMultiFilter(ticket, filters.redmineStatus) &&
+      matchesMultiFilter(ticket, filters.status) &&
+      matchesMultiFilter(ticket, filters.creator)
     );
   });
+
+  currentFilteredTickets = filtered;
 
   updateKPIs(filtered);
   renderStatusChart(filtered);
@@ -182,14 +284,26 @@ function applyFilters() {
   renderTable(filtered);
 }
 
+function matchesMultiFilter(ticket, filter) {
+  if (filter.selected.length === 0) {
+    return true;
+  }
+
+  return filter.selected.includes(ticket[filter.field]);
+}
+
 function clearFilters() {
   searchInput.value = "";
-  platformFilter.value = "";
-  impactFilter.value = "";
-  priorityFilter.value = "";
-  redmineStatusFilter.value = "";
-  statusFilter.value = "";
-  creatorFilter.value = "";
+
+  Object.values(filters).forEach(filter => {
+    filter.selected = [];
+    filter.element
+      .querySelectorAll("input[type='checkbox']")
+      .forEach(checkbox => {
+        checkbox.checked = false;
+      });
+    updateMultiSelectLabel(filter);
+  });
 
   applyFilters();
 }
@@ -198,15 +312,18 @@ function updateKPIs(data) {
   const total = data.length;
 
   const newRedmine = data.filter(t =>
-    t.estadoRedmine.trim().toLowerCase() === "new"
+    normalizeText(t.estadoRedmine) === "new"
   ).length;
 
   const resolvedRedmine = data.filter(t =>
-    t.estadoRedmine.trim().toLowerCase() === "resolved"
+    normalizeText(t.estadoRedmine) === "resolved"
   ).length;
+
+  const otherRedmine = total - newRedmine - resolvedRedmine;
 
   document.getElementById("kpiTotal").textContent = total;
   document.getElementById("kpiNewRedmine").textContent = newRedmine;
+  document.getElementById("kpiOtherRedmine").textContent = otherRedmine;
   document.getElementById("kpiResolvedRedmine").textContent = resolvedRedmine;
 }
 
@@ -263,27 +380,83 @@ function renderTable(data) {
 
   document.getElementById("tableCount").textContent = `${data.length} registros`;
 
-  data
-    .sort((a, b) => b.edad - a.edad)
-    .forEach(ticket => {
-      const row = document.createElement("tr");
+  const sortedData = sortTickets([...data]);
 
-      row.innerHTML = `
-        <td>${renderTicketLink(ticket.tkPadre)}</td>
-        <td>${escapeHtml(ticket.fecha)}</td>
-        <td>${ticket.edad || ""}</td>
-        <td>${escapeHtml(ticket.plataforma)}</td>
-        <td>${escapeHtml(ticket.impacto)}</td>
-        <td>${escapeHtml(ticket.tipoRedmine)}</td>
-        <td>${escapeHtml(ticket.titulo)}</td>
-        <td><span class="tag ${getTagClass(ticket.prioridad)}">${escapeHtml(ticket.prioridad)}</span></td>
-        <td><span class="tag ${getTagClass(ticket.estadoRedmine)}">${escapeHtml(ticket.estadoRedmine)}</span></td>
-        <td><span class="tag ${getTagClass(ticket.estadoOperativo)}">${escapeHtml(ticket.estadoOperativo)}</span></td>
-        <td>${escapeHtml(ticket.creador)}</td>
-      `;
+  sortedData.forEach(ticket => {
+    const row = document.createElement("tr");
 
-      tbody.appendChild(row);
+    row.innerHTML = `
+      <td>${renderTicketLink(ticket.tkPadre)}</td>
+      <td>${escapeHtml(ticket.fecha)}</td>
+      <td>${ticket.edad || ""}</td>
+      <td>${escapeHtml(ticket.plataforma)}</td>
+      <td>${escapeHtml(ticket.impacto)}</td>
+      <td>${escapeHtml(ticket.tipoRedmine)}</td>
+      <td>${escapeHtml(ticket.titulo)}</td>
+      <td><span class="tag ${getTagClass(ticket.prioridad)}">${escapeHtml(ticket.prioridad)}</span></td>
+      <td><span class="tag ${getTagClass(ticket.estadoRedmine)}">${escapeHtml(ticket.estadoRedmine)}</span></td>
+      <td><span class="tag ${getTagClass(ticket.estadoOperativo)}">${escapeHtml(ticket.estadoOperativo)}</span></td>
+      <td>${escapeHtml(ticket.creador)}</td>
+    `;
+
+    tbody.appendChild(row);
+  });
+
+  updateSortHeaders();
+}
+
+function sortTickets(data) {
+  const { field, direction } = sortState;
+  const multiplier = direction === "asc" ? 1 : -1;
+
+  return data.sort((a, b) => {
+    let valueA = a[field];
+    let valueB = b[field];
+
+    if (field === "edad") {
+      valueA = Number(valueA) || 0;
+      valueB = Number(valueB) || 0;
+      return (valueA - valueB) * multiplier;
+    }
+
+    if (field === "fecha") {
+      valueA = Date.parse(valueA) || 0;
+      valueB = Date.parse(valueB) || 0;
+      return (valueA - valueB) * multiplier;
+    }
+
+    valueA = normalizeText(valueA);
+    valueB = normalizeText(valueB);
+
+    return valueA.localeCompare(valueB, "es") * multiplier;
+  });
+}
+
+function updateSortHeaders() {
+  document.querySelectorAll("th[data-sort]").forEach(th => {
+    th.classList.remove("sort-asc", "sort-desc");
+
+    if (th.dataset.sort === sortState.field) {
+      th.classList.add(sortState.direction === "asc" ? "sort-asc" : "sort-desc");
+    }
+  });
+}
+
+function setupSortHeaders() {
+  document.querySelectorAll("th[data-sort]").forEach(th => {
+    th.addEventListener("click", () => {
+      const field = th.dataset.sort;
+
+      if (sortState.field === field) {
+        sortState.direction = sortState.direction === "asc" ? "desc" : "asc";
+      } else {
+        sortState.field = field;
+        sortState.direction = field === "edad" ? "desc" : "asc";
+      }
+
+      renderTable(currentFilteredTickets);
     });
+  });
 }
 
 function renderTicketLink(ticketNumber) {
@@ -302,11 +475,16 @@ function renderTicketLink(ticketNumber) {
   `;
 }
 
-function getTagClass(value) {
+function normalizeText(value) {
   return String(value || "")
+    .trim()
     .toLowerCase()
     .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[\u0300-\u036f]/g, "");
+}
+
+function getTagClass(value) {
+  return normalizeText(value)
     .replace(/\s+/g, "-")
     .replace(/[^a-z0-9-]/g, "");
 }
@@ -321,12 +499,7 @@ function escapeHtml(value) {
 }
 
 searchInput.addEventListener("input", applyFilters);
-platformFilter.addEventListener("change", applyFilters);
-impactFilter.addEventListener("change", applyFilters);
-priorityFilter.addEventListener("change", applyFilters);
-redmineStatusFilter.addEventListener("change", applyFilters);
-statusFilter.addEventListener("change", applyFilters);
-creatorFilter.addEventListener("change", applyFilters);
 clearFiltersBtn.addEventListener("click", clearFilters);
+setupSortHeaders();
 
 initDashboard();
