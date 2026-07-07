@@ -4,151 +4,79 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dashboard TKs Redmine</title>
-  <link rel="stylesheet" href="styles.css?v=6" />
+  <link rel="stylesheet" href="styles.css?v=8.1" />
 </head>
 <body>
-
   <main class="dashboard">
-
     <header class="header">
       <div>
         <div class="badge">FIBRAZO · PRODUCT / GROWTH</div>
         <h1>Dashboard TKs Redmine</h1>
-        <p>Seguimiento de tickets, prioridades, estados, creadores e impacto operativo.</p>
+        <p>Seguimiento de tickets, prioridades, estados, creadores, cierres e impacto operativo.</p>
       </div>
-
-      <div class="update-box">
-        <span>Datos actualizados</span>
-        <strong id="lastUpdate">Cargando...</strong>
-      </div>
+      <div class="update-box"><span>Datos actualizados</span><strong id="lastUpdate">Cargando...</strong></div>
     </header>
 
     <section class="filters filters-extended">
-      <div>
-        <label>Buscar</label>
-        <input id="searchInput" type="text" placeholder="Buscar por título, objetivo, TK o creador..." />
-      </div>
+      <div><label>Buscar</label><input id="searchInput" type="text" placeholder="Buscar por título, objetivo, TK, autor o creador..." /></div>
+      <div><label>Plataforma</label><div id="platformFilter" class="multi-select" data-placeholder="Todas"></div></div>
+      <div><label>Impacto</label><div id="impactFilter" class="multi-select" data-placeholder="Todos"></div></div>
+      <div><label>Prioridad Redmine</label><div id="priorityFilter" class="multi-select" data-placeholder="Todas"></div></div>
+      <div><label>Estado Redmine</label><div id="redmineStatusFilter" class="multi-select" data-placeholder="Todos"></div></div>
+      <div><label>Estado operativo</label><div id="statusFilter" class="multi-select" data-placeholder="Todos"></div></div>
+      <div><label>Área FZO</label><div id="areaFilter" class="multi-select" data-placeholder="Todas"></div></div>
+      <div class="filter-actions"><label>Acciones</label><button id="clearFiltersBtn" type="button">Limpiar filtros</button></div>
+    </section>
 
-      <div>
-        <label>Plataforma</label>
-        <div id="platformFilter" class="multi-select" data-placeholder="Todas"></div>
-      </div>
-
-      <div>
-        <label>Impacto</label>
-        <div id="impactFilter" class="multi-select" data-placeholder="Todos"></div>
-      </div>
-
-      <div>
-        <label>Prioridad Redmine</label>
-        <div id="priorityFilter" class="multi-select" data-placeholder="Todas"></div>
-      </div>
-
-      <div>
-        <label>Estado Redmine</label>
-        <div id="redmineStatusFilter" class="multi-select" data-placeholder="Todos"></div>
-      </div>
-
-      <div>
-        <label>Estado operativo</label>
-        <div id="statusFilter" class="multi-select" data-placeholder="Todos"></div>
-      </div>
-
-      <div>
-        <label>Creador</label>
-        <div id="creatorFilter" class="multi-select" data-placeholder="Todos"></div>
-      </div>
-
-      <div class="filter-actions">
-        <label>Acciones</label>
-        <button id="clearFiltersBtn" type="button">Limpiar filtros</button>
-      </div>
+    <section class="filters date-filters">
+      <div><label>Fecha creación desde</label><input id="createdFromFilter" type="date" /></div>
+      <div><label>Fecha creación hasta</label><input id="createdToFilter" type="date" /></div>
+      <div><label>Fecha cierre desde</label><input id="closedFromFilter" type="date" /></div>
+      <div><label>Fecha cierre hasta</label><input id="closedToFilter" type="date" /></div>
     </section>
 
     <section class="kpi-grid">
-      <article class="kpi-card">
-        <span>Total tickets</span>
-        <strong id="kpiTotal">0</strong>
-      </article>
-
-      <article class="kpi-card">
-        <span>New Redmine</span>
-        <strong id="kpiNewRedmine">0</strong>
-      </article>
-
-      <article class="kpi-card">
-        <span>Otros Redmine</span>
-        <strong id="kpiOtherRedmine">0</strong>
-      </article>
-
-      <article class="kpi-card">
-        <span>Resolved Redmine</span>
-        <strong id="kpiResolvedRedmine">0</strong>
-      </article>
+      <article class="kpi-card"><span>Total tickets</span><strong id="kpiTotal">0</strong></article>
+      <article class="kpi-card"><span>New Redmine</span><strong id="kpiNewRedmine">0</strong></article>
+      <article class="kpi-card"><span>Otros Redmine</span><strong id="kpiOtherRedmine">0</strong></article>
+      <article class="kpi-card"><span>Resolved Redmine</span><strong id="kpiResolvedRedmine">0</strong></article>
     </section>
 
     <section class="content-grid">
-      <article class="panel">
-        <div class="panel-header">
-          <h2>Tickets por estado operativo</h2>
-        </div>
-        <div id="statusChart" class="bar-chart"></div>
-      </article>
-
-      <article class="panel">
-        <div class="panel-header">
-          <h2>Tickets por prioridad Redmine</h2>
-        </div>
-        <div id="priorityChart" class="bar-chart"></div>
-      </article>
+      <article class="panel"><div class="panel-header"><h2>Tickets por estado operativo</h2></div><div id="statusChart" class="bar-chart"></div></article>
+      <article class="panel"><div class="panel-header"><h2>Tickets por prioridad Redmine</h2></div><div id="priorityChart" class="bar-chart"></div></article>
     </section>
 
     <section class="content-grid">
-      <article class="panel">
-        <div class="panel-header">
-          <h2>Tickets por estado Redmine</h2>
-        </div>
-        <div id="redmineStatusChart" class="bar-chart"></div>
-      </article>
-
-      <article class="panel">
-        <div class="panel-header">
-          <h2>Tickets por impacto</h2>
-        </div>
-        <div id="impactChart" class="bar-chart"></div>
-      </article>
+      <article class="panel"><div class="panel-header"><h2>Tickets por estado Redmine</h2></div><div id="redmineStatusChart" class="bar-chart"></div></article>
+      <article class="panel"><div class="panel-header"><h2>Tickets por impacto</h2></div><div id="impactChart" class="bar-chart"></div></article>
     </section>
 
     <section class="panel">
-      <div class="panel-header">
-        <h2>Detalle de tickets</h2>
-        <span id="tableCount">0 registros</span>
+      <div class="panel-header detail-header">
+        <div><h2>Detalle de tickets</h2><span id="tableCount">0 registros</span></div>
+        <div class="table-toolbar">
+          <button id="scrollLeftBtn" type="button" class="small-btn">← Izquierda</button>
+          <button id="scrollRightBtn" type="button" class="small-btn">Derecha →</button>
+          <div class="columns-control" id="columnsControl">
+            <button id="columnsBtn" type="button" class="small-btn">Columnas ▾</button>
+            <div id="columnsMenu" class="columns-menu"></div>
+          </div>
+        </div>
       </div>
-
-      <div class="table-wrapper">
+      <div class="scroll-hint">Puedes mover la tabla con los botones, con el scroll inferior o con Shift + rueda del mouse.</div>
+      <div id="tableWrapper" class="table-wrapper">
         <table>
           <thead>
             <tr>
-              <th data-sort="tkPadre">TK Padre</th>
-              <th data-sort="fecha">Fecha de creación</th>
-              <th data-sort="edad">Envejecimiento (días)</th>
-              <th data-sort="plataforma">Plataforma</th>
-              <th data-sort="impacto">Impacto</th>
-              <th data-sort="tipoRedmine">Tipo</th>
-              <th data-sort="titulo">Título</th>
-              <th data-sort="prioridad">Prioridad Redmine</th>
-              <th data-sort="estadoRedmine">Estado Redmine</th>
-              <th data-sort="estadoOperativo">Estado Operativo</th>
-              <th data-sort="creador">Creador</th>
+              <th data-sort="tkPadre" data-col="tkPadre">TK Padre</th><th data-sort="tkHijo" data-col="tkHijo">TK Hijo</th><th data-sort="fecha" data-col="fecha">Fecha de creación</th><th data-sort="fechaCierre" data-col="fechaCierre">Fecha de cierre</th><th data-sort="edad" data-col="edad">Envejecimiento (días)</th><th data-sort="plataforma" data-col="plataforma">Plataforma</th><th data-sort="impacto" data-col="impacto">Impacto</th><th data-sort="complejidad" data-col="complejidad">Complexity</th><th data-sort="tipoRedmine" data-col="tipoRedmine">Tipo</th><th data-sort="prioridad" data-col="prioridad">Prioridad Redmine</th><th data-sort="estadoRedmine" data-col="estadoRedmine">Estado Redmine</th><th data-sort="titulo" data-col="titulo">Título</th><th data-sort="objetivo" data-col="objetivo">Objetivo</th><th data-sort="estadoOperativo" data-col="estadoOperativo">Estado Operativo</th><th data-sort="creador" data-col="creador">Creador</th><th data-sort="autor" data-col="autor">Autor</th><th data-sort="asignadoA" data-col="asignadoA">Asignado a</th><th data-sort="versionPrevista" data-col="versionPrevista">Versión prevista</th><th data-sort="stakeholder" data-col="stakeholder">Stakeholder</th><th data-sort="areaFZO" data-col="areaFZO">Área FZO</th><th data-sort="nota" data-col="nota">Nota</th>
             </tr>
           </thead>
           <tbody id="ticketsTable"></tbody>
         </table>
       </div>
     </section>
-
   </main>
-
-  <script src="app.js?v=6"></script>
+  <script src="app.js?v=8.1"></script>
 </body>
 </html>
