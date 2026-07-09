@@ -2,7 +2,7 @@
 
 /* ================================
    Ajuste compacto tabla de tickets
-   v22
+   v23
    ================================ */
 
 .panel:has(#tableWrapper) {
@@ -149,7 +149,7 @@ td[data-col="nota"] {
 }
 
 /* ================================
-   Compactación adicional v22
+   Compactación adicional v23
    ================================ */
 
 .table-wrapper table {
@@ -248,7 +248,7 @@ td[data-col="nota"] {
 
 
 /* ================================
-   Ajustes visuales v22
+   Ajustes visuales v23
    ================================ */
 
 /* Filtros: fecha compacta al lado derecho del botón */
@@ -376,7 +376,7 @@ td[data-col="nota"] {
 
 
 /* ================================
-   Ajustes visuales v22
+   Ajustes visuales v23
    ================================ */
 
 /* La fila de acciones/fechas queda como bloque propio, alineada a la derecha */
@@ -446,7 +446,7 @@ td[data-col="nota"] {
 
 
 /* ================================
-   Ajustes visuales v22
+   Ajustes visuales v23
    ================================ */
 
 /* Acciones y fechas alineadas al margen izquierdo debajo del buscador */
@@ -479,7 +479,7 @@ td[data-col="nota"] {
 
 
 /* ================================
-   Ajustes visuales v22
+   Ajustes visuales v23
    ================================ */
 
 .review-status-card {
@@ -531,7 +531,7 @@ td[data-col="nota"] {
 
 
 /* ================================
-   Ajustes visuales v22
+   Ajustes visuales v23
    ================================ */
 
 /* Quitar visualmente cualquier bloque anterior de revisión si quedó por caché/markup */
@@ -599,7 +599,7 @@ td[data-col="nota"] {
 
 
 /* ================================
-   Corrección final header v22
+   Corrección final header v23
    ================================ */
 
 .header {
@@ -670,7 +670,7 @@ td[data-col="nota"] {
 
 
 /* ================================
-   Ajustes visuales v22
+   Ajustes visuales v23
    ================================ */
 
 /* Quitar el espacio extra si el H1 ya no está */

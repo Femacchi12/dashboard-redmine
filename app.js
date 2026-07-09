@@ -8,12 +8,13 @@ const SHEET_URL = "https://docs.google.com/spreadsheets/d/1ORFQFPdlG0Jmy3QFy0vIw
 const REDMINE_BASE_URL = "https://redmine.fibrazo.com.co/issues/";
 const DEFAULT_AREA_FILTER = "Growth";
 let suppressDefaultAreaFilter = false;
-const COLUMN_STORAGE_KEY = "dashboardRedmineVisibleColumnsV22";
+const COLUMN_STORAGE_KEY = "dashboardRedmineVisibleColumnsV23";
 
 let allTickets = [];
 let currentFilteredTickets = [];
 let sortState = { field: "edad", direction: "desc" ,visible:true};
 let visibleColumns = {};
+let dashboardStatus = { lastUpdate: "", nextUpdate: "" };
 
 const searchInput = document.getElementById("searchInput");
 const clearFiltersBtn = document.getElementById("clearFiltersBtn");
@@ -67,7 +68,9 @@ async function initDashboard() {
     if (!response.ok) throw new Error(`Error HTTP ${response.status}`);
 
     const csvText = await response.text();
-    allTickets = csvToObjects(csvText)
+    const sheetRows = csvToObjects(csvText);
+    dashboardStatus = extractDashboardStatus(sheetRows);
+    allTickets = sheetRows
       .map(normalizeTicket)
       .filter(t => t.titulo || t.tkPadre || t.autor || t.responsable || t.estadoRedmine);
 
@@ -130,6 +133,33 @@ function parseCSV(text) {
     rows.push(row);
   }
   return rows;
+}
+
+
+function extractDashboardStatus(rows) {
+  const getFromRow = (row, aliases) => {
+    for (const alias of aliases) {
+      if (Object.prototype.hasOwnProperty.call(row, alias) && String(row[alias] || "").trim() !== "") {
+        return String(row[alias]).trim();
+      }
+    }
+    const normalizedAliases = aliases.map(normalizeHeader);
+    const foundKey = Object.keys(row).find(key => normalizedAliases.includes(normalizeHeader(key)));
+    return foundKey ? String(row[foundKey] || "").trim() : "";
+  };
+
+  const lastAliases = ["Última actualización", "Ultima actualizacion", "Última Actualización", "Ultima Actualizacion"];
+  const nextAliases = ["Próxima actualización", "Proxima actualizacion", "Próxima Actualización", "Proxima Actualizacion"];
+
+  for (const row of rows) {
+    const lastUpdate = getFromRow(row, lastAliases);
+    const nextUpdate = getFromRow(row, nextAliases);
+    if (lastUpdate || nextUpdate) {
+      return { lastUpdate, nextUpdate };
+    }
+  }
+
+  return { lastUpdate: "", nextUpdate: "" };
 }
 
 function normalizeTicket(ticket) {
@@ -649,11 +679,14 @@ function renderReviewStatus() {
   const lastAiReviewEl = document.getElementById("lastAiReview");
   const nextAiReviewEl = document.getElementById("nextAiReview");
 
-  const lastReview = new Date(LAST_AI_REVIEW_AT);
-  if (lastAiReviewEl) lastAiReviewEl.textContent = formatDashboardDateTime(lastReview);
+  if (lastAiReviewEl) {
+    lastAiReviewEl.textContent = dashboardStatus.lastUpdate || formatDashboardDateTime(new Date(LAST_AI_REVIEW_AT));
+  }
 
-  const nextReview = calculateNextAiReview(lastReview);
-  if (nextAiReviewEl) nextAiReviewEl.textContent = formatDashboardDateTime(nextReview);
+  if (nextAiReviewEl) {
+    const fallbackNextReview = calculateNextAiReview(new Date(LAST_AI_REVIEW_AT));
+    nextAiReviewEl.textContent = dashboardStatus.nextUpdate || formatDashboardDateTime(fallbackNextReview);
+  }
 }
 
 
