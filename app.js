@@ -1,8 +1,14 @@
+
+// Estado visible de revisión IA / correos.
+// Este valor debe actualizarse cuando se haga una revisión real de correos Redmine.
+const LAST_AI_REVIEW_AT = "2026-07-09T15:47:23-05:00";
+const AI_REVIEW_INTERVAL_HOURS = 4;
+
 const SHEET_URL = "https://docs.google.com/spreadsheets/d/1ORFQFPdlG0Jmy3QFy0vIw_xyIu8t3ioKPTlO9FjJMQ0/gviz/tq?tqx=out:csv&gid=1462054165";
 const REDMINE_BASE_URL = "https://redmine.fibrazo.com.co/issues/";
 const DEFAULT_AREA_FILTER = "Growth";
 let suppressDefaultAreaFilter = false;
-const COLUMN_STORAGE_KEY = "dashboardRedmineVisibleColumnsV18";
+const COLUMN_STORAGE_KEY = "dashboardRedmineVisibleColumnsV22";
 
 let allTickets = [];
 let currentFilteredTickets = [];
@@ -70,8 +76,8 @@ async function initDashboard() {
     renderTableHeaders();
     setupColumnSelector();
     applyFilters();
-    document.getElementById("lastUpdate").textContent = new Date().toLocaleString("es-CO");
-  } catch (error) {
+    renderReviewStatus();
+} catch (error) {
     console.error("Error cargando datos:", error);
     alert("No se pudieron cargar los datos del Google Sheet. Revisa permisos del Sheet, filtros activos en la hoja o caché del navegador.");
   }
@@ -613,9 +619,49 @@ tableWrapper.addEventListener("wheel", event => {
   }
 });
 
+
+function formatDashboardDateTime(date) {
+  if (!(date instanceof Date) || isNaN(date)) return "--";
+  return new Intl.DateTimeFormat("es-CO", {
+    timeZone: "America/Bogota",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "numeric",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true
+  }).format(date);
+}
+
+function calculateNextAiReview(lastDate) {
+  if (!(lastDate instanceof Date) || isNaN(lastDate)) return null;
+  const now = new Date();
+  let next = new Date(lastDate.getTime());
+  const intervalMs = AI_REVIEW_INTERVAL_HOURS * 60 * 60 * 1000;
+  while (next <= now) {
+    next = new Date(next.getTime() + intervalMs);
+  }
+  return next;
+}
+
+function renderReviewStatus() {
+  const lastAiReviewEl = document.getElementById("lastAiReview");
+  const nextAiReviewEl = document.getElementById("nextAiReview");
+
+  const lastReview = new Date(LAST_AI_REVIEW_AT);
+  if (lastAiReviewEl) lastAiReviewEl.textContent = formatDashboardDateTime(lastReview);
+
+  const nextReview = calculateNextAiReview(lastReview);
+  if (nextAiReviewEl) nextAiReviewEl.textContent = formatDashboardDateTime(nextReview);
+}
+
+
 document.addEventListener("click", () => {
   Object.values(filters).forEach(filter => filter.element.classList.remove("open"));
   columnsControl.classList.remove("open");
 });
 
 initDashboard();
+
+renderReviewStatus();

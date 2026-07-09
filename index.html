@@ -4,17 +4,25 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dashboard TKs Redmine</title>
-  <link rel="stylesheet" href="styles.css?v=18" />
+  <link rel="stylesheet" href="styles.css?v=22" />
 </head>
 <body>
   <main class="dashboard">
     <header class="header">
-      <div>
-        <div class="badge">FIBRAZO · PRODUCT / GROWTH</div>
-        <h1>Dashboard TKs Redmine</h1>
-        <p>Seguimiento de tickets, prioridades, estados, responsables manuales, autores, cierres e impacto operativo.</p>
+      <div class="header-main">
+        <div class="badge">FIBRAZO / GROWTH - Dashboard TKs Redmine</div>
+<p>Seguimiento de tickets, estados, autores, responsables, cierres, etc.</p>
       </div>
-      <div class="update-box"><span>Datos actualizados</span><strong id="lastUpdate">Cargando...</strong></div>
+      <div class="header-updates">
+        <div class="update-card compact-update-card">
+          <span>Última actualización</span>
+          <strong id="lastAiReview">--</strong>
+        </div>
+        <div class="update-card compact-update-card">
+          <span>Próxima actualización</span>
+          <strong id="nextAiReview">--</strong>
+        </div>
+      </div>
     </header>
 
     <section class="filters filters-extended">
@@ -71,6 +79,6 @@
       </div>
     </section>
   </main>
-  <script src="app.js?v=18"></script>
+  <script src="app.js?v=22"></script>
 </body>
 </html>
