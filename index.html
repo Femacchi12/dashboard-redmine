@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dashboard TKs Redmine</title>
-  <link rel="stylesheet" href="styles.css?v=24" />
+  <link rel="stylesheet" href="styles.css?v=27" />
 </head>
 <body>
   <main class="dashboard">
@@ -21,10 +21,6 @@
         <div class="update-card compact-update-card">
           <span>Próxima actualización</span>
           <strong id="nextAiReview">--</strong>
-        </div>
-        <div class="update-card compact-update-card">
-          <span>Propuestas pendientes</span>
-          <strong id="pendingProposals">0</strong>
         </div>
       </div>
     </header>
@@ -60,6 +56,24 @@
       <article class="panel"><div class="panel-header"><h2>Tickets Por Prioridad Redmine</h2></div><div id="priorityChart" class="bar-chart"></div></article>
     </section>
 
+    <section id="reviewPanel" class="panel review-panel collapsed">
+      <button id="reviewToggle" class="review-toggle" type="button" aria-expanded="false">
+        <span>
+          <strong>Seguimiento De Actualizaciones</strong>
+          <small id="reviewSummary">Últimas revisiones y propuestas pendientes</small>
+        </span>
+        <span id="reviewToggleAction" class="review-toggle-action">Ver detalle ▾</span>
+      </button>
+      <div id="reviewCollapsibleBody" class="review-collapsible-body">
+        <div class="review-tabs" role="tablist" aria-label="Seguimiento de actualizaciones Redmine">
+          <button id="tabRecentChanges" type="button" class="review-tab active">Últimos cambios</button>
+          <button id="tabPendingChanges" type="button" class="review-tab">Pendientes por aprobar <span id="pendingBadge" class="tab-badge">0</span></button>
+        </div>
+        <div id="recentChangesPanel" class="review-tab-panel active"></div>
+        <div id="pendingChangesPanel" class="review-tab-panel"></div>
+      </div>
+    </section>
+
     <section class="panel">
       <div class="panel-header detail-header">
         <div><h2>Detalle De Tickets</h2><span id="tableCount">0 registros</span></div>
@@ -83,6 +97,6 @@
       </div>
     </section>
   </main>
-  <script src="app.js?v=23"></script>
+  <script src="app.js?v=27"></script>
 </body>
 </html>

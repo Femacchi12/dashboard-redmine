@@ -734,3 +734,80 @@ td[data-col="nota"] {
     white-space: normal;
   }
 }
+
+
+/* V25 - Seguimiento de actualizaciones */
+.header-updates{display:grid;grid-template-columns:repeat(2,minmax(210px,1fr));gap:12px;min-width:min(520px,100%)}
+.review-panel{margin-bottom:20px}
+.review-tabs{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.review-tab{width:auto;min-width:150px;padding:9px 12px;border-radius:999px;background:#111714;color:#d1d5db;border:1px solid #26352d}
+.review-tab.active{background:rgba(20,241,149,.14);color:#14f195;border-color:rgba(20,241,149,.45)}
+.tab-badge{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;margin-left:6px;padding:0 6px;border-radius:999px;background:#0b0f0d;border:1px solid #26352d;color:#14f195;font-size:12px}
+.review-tab-panel{display:none}
+.review-tab-panel.active{display:block}
+.review-list{display:grid;gap:10px}
+.review-item{background:#0f1512;border:1px solid #1b2621;border-radius:14px;padding:13px}
+.review-item.pending{border-color:rgba(251,191,36,.35);background:rgba(251,191,36,.05)}
+.review-item-header{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:8px}
+.review-item-header strong{color:#f4f7f5;font-size:14px}
+.review-item-header span{color:#8b949e;font-size:12px;white-space:nowrap}
+.review-title{color:#e5e7eb;font-size:13px;margin-bottom:6px;font-weight:700}
+.review-item-body{color:#d1d5db;font-size:13px;line-height:1.45;margin-bottom:8px}
+.review-meta{color:#8b949e;font-size:12px}
+.review-empty{color:#8b949e;background:#0f1512;border:1px dashed #26352d;border-radius:14px;padding:16px;text-align:center}
+@media(max-width:900px){.header-updates{grid-template-columns:1fr}.review-item-header{display:block}.review-item-header span{display:block;margin-top:4px}.review-tab{width:100%}}
+
+
+/* V26 - seguimiento contraíble y resumen limpio */
+.review-panel{overflow:hidden}
+.review-toggle{width:100%;display:flex;align-items:center;justify-content:space-between;gap:16px;background:transparent;border:0;color:#f4f7f5;padding:0;text-align:left;cursor:pointer}
+.review-toggle span:first-child{display:grid;gap:4px}
+.review-toggle strong{font-size:18px;line-height:1.2}
+.review-toggle small{font-size:13px;color:#9ca3af;font-weight:500}
+.review-toggle-action{display:inline-flex;align-items:center;justify-content:center;min-width:128px;padding:9px 13px;border-radius:999px;background:rgba(20,241,149,.12);border:1px solid rgba(20,241,149,.45);color:#14f195;font-size:13px;font-weight:800;white-space:nowrap}
+.review-collapsible-body{margin-top:16px;display:grid;gap:14px}
+.review-panel.collapsed .review-collapsible-body{display:none}
+.review-tabs{justify-content:flex-end}
+.review-meta{color:#8b949e;font-size:12px}
+@media(max-width:700px){.review-toggle{align-items:flex-start;flex-direction:column}.review-toggle-action{width:100%}.review-tabs{justify-content:stretch}.review-tab{width:100%}}
+
+
+/* V27 - seguimiento más compacto y listado real de cambios */
+.review-panel.collapsed{
+  padding:10px 14px;
+  border-radius:14px;
+  margin-bottom:14px;
+}
+.review-panel.collapsed .review-toggle{
+  min-height:42px;
+}
+.review-panel.collapsed .review-toggle strong{
+  font-size:15px;
+}
+.review-panel.collapsed .review-toggle small{
+  font-size:12px;
+}
+.review-panel.collapsed .review-toggle-action{
+  min-width:108px;
+  padding:7px 11px;
+  font-size:12px;
+}
+.review-panel:not(.collapsed){
+  padding:16px;
+}
+.review-panel:not(.collapsed) .review-toggle{
+  margin-bottom:4px;
+}
+.changes-list .review-item,
+.review-item.applied-change{
+  border-color:rgba(20,241,149,.30);
+  background:rgba(20,241,149,.045);
+}
+.review-empty{
+  padding:12px 14px;
+  text-align:left;
+}
+@media(max-width:700px){
+  .review-panel.collapsed{padding:10px 12px}
+  .review-panel.collapsed .review-toggle{gap:8px}
+}

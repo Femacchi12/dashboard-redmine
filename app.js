@@ -4,17 +4,22 @@
 const LAST_AI_REVIEW_AT = "2026-07-09T15:47:23-05:00";
 const AI_REVIEW_INTERVAL_HOURS = 4;
 
-const SHEET_URL = "https://docs.google.com/spreadsheets/d/1dMNdIcdRSjGE5RZmBN-ygSmu4O4S6060jd4pkq33-qE/gviz/tq?tqx=out:csv&gid=764769884";
+const SHEET_ID = "1dMNdIcdRSjGE5RZmBN-ygSmu4O4S6060jd4pkq33-qE";
+const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=764769884`;
+const PROPOSALS_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=764769885`;
+const LOG_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=764769886`;
 const REDMINE_BASE_URL = "https://redmine.fibrazo.com.co/issues/";
 const DEFAULT_AREA_FILTER = "Growth";
 let suppressDefaultAreaFilter = false;
-const COLUMN_STORAGE_KEY = "dashboardRedmineVisibleColumnsV24";
+const COLUMN_STORAGE_KEY = "dashboardRedmineVisibleColumnsV26";
 
 let allTickets = [];
 let currentFilteredTickets = [];
 let sortState = { field: "edad", direction: "desc" ,visible:true};
 let visibleColumns = {};
 let dashboardStatus = { lastUpdate: "", nextUpdate: "", pendingProposals: "", lastResult: "" };
+let proposalsData = [];
+let logData = [];
 
 const searchInput = document.getElementById("searchInput");
 const clearFiltersBtn = document.getElementById("clearFiltersBtn");
@@ -64,11 +69,18 @@ const filters = {
 
 async function initDashboard() {
   try {
-    const response = await fetch(`${SHEET_URL}&cacheBust=${Date.now()}`, { cache: "no-store" });
-    if (!response.ok) throw new Error(`Error HTTP ${response.status}`);
+    const cacheBust = Date.now();
+    const [mainResponse, proposalsResponse, logResponse] = await Promise.all([
+      fetch(`${SHEET_URL}&cacheBust=${cacheBust}`, { cache: "no-store" }),
+      fetch(`${PROPOSALS_URL}&cacheBust=${cacheBust}`, { cache: "no-store" }),
+      fetch(`${LOG_URL}&cacheBust=${cacheBust}`, { cache: "no-store" })
+    ]);
+    if (!mainResponse.ok) throw new Error(`Error HTTP ${mainResponse.status}`);
 
-    const csvText = await response.text();
+    const csvText = await mainResponse.text();
     const sheetRows = csvToObjects(csvText);
+    proposalsData = proposalsResponse.ok ? csvToObjects(await proposalsResponse.text()) : [];
+    logData = logResponse.ok ? csvToObjects(await logResponse.text()) : [];
     dashboardStatus = extractDashboardStatus(sheetRows);
     allTickets = sheetRows
       .map(normalizeTicket)
@@ -80,6 +92,9 @@ async function initDashboard() {
     setupColumnSelector();
     applyFilters();
     renderReviewStatus();
+    renderReviewTabs();
+    setupReviewTabs();
+    setupReviewToggle();
 } catch (error) {
     console.error("Error cargando datos:", error);
     alert("No se pudieron cargar los datos del Google Sheet. Revisa permisos del Sheet, filtros activos en la hoja o caché del navegador.");
@@ -682,7 +697,6 @@ function calculateNextAiReview(lastDate) {
 function renderReviewStatus() {
   const lastAiReviewEl = document.getElementById("lastAiReview");
   const nextAiReviewEl = document.getElementById("nextAiReview");
-  const pendingProposalsEl = document.getElementById("pendingProposals");
 
   if (lastAiReviewEl) {
     lastAiReviewEl.textContent = dashboardStatus.lastUpdate || formatDashboardDateTime(new Date(LAST_AI_REVIEW_AT));
@@ -692,12 +706,185 @@ function renderReviewStatus() {
     const fallbackNextReview = calculateNextAiReview(new Date(LAST_AI_REVIEW_AT));
     nextAiReviewEl.textContent = dashboardStatus.nextUpdate || formatDashboardDateTime(fallbackNextReview);
   }
+}
 
-  if (pendingProposalsEl) {
-    const pending = dashboardStatus.pendingProposals || "0";
-    const result = dashboardStatus.lastResult ? ` · ${dashboardStatus.lastResult}` : "";
-    pendingProposalsEl.textContent = `${pending}${result}`;
+function setupReviewTabs() {
+  const recentTab = document.getElementById("tabRecentChanges");
+  const pendingTab = document.getElementById("tabPendingChanges");
+  const recentPanel = document.getElementById("recentChangesPanel");
+  const pendingPanel = document.getElementById("pendingChangesPanel");
+  if (!recentTab || !pendingTab || !recentPanel || !pendingPanel) return;
+
+  const activate = active => {
+    const showRecent = active === "recent";
+    recentTab.classList.toggle("active", showRecent);
+    pendingTab.classList.toggle("active", !showRecent);
+    recentPanel.classList.toggle("active", showRecent);
+    pendingPanel.classList.toggle("active", !showRecent);
+  };
+
+  recentTab.addEventListener("click", event => { event.stopPropagation(); activate("recent"); });
+  pendingTab.addEventListener("click", event => { event.stopPropagation(); activate("pending"); });
+}
+
+function setupReviewToggle() {
+  const panel = document.getElementById("reviewPanel");
+  const toggle = document.getElementById("reviewToggle");
+  const action = document.getElementById("reviewToggleAction");
+  if (!panel || !toggle) return;
+
+  toggle.addEventListener("click", () => {
+    const isCollapsed = panel.classList.toggle("collapsed");
+    toggle.setAttribute("aria-expanded", String(!isCollapsed));
+    if (action) action.textContent = isCollapsed ? "Ver detalle ▾" : "Ocultar detalle ▴";
+  });
+}
+
+function renderReviewTabs() {
+  const pendingItems = getPendingProposals();
+  renderRecentChanges();
+  renderPendingChanges(pendingItems);
+
+  const pendingBadge = document.getElementById("pendingBadge");
+  if (pendingBadge) pendingBadge.textContent = pendingItems.length;
+
+  const reviewSummary = document.getElementById("reviewSummary");
+  if (reviewSummary) {
+    const result = formatReviewResult(dashboardStatus.lastResult || getLatestLogResult() || "Última revisión registrada");
+    reviewSummary.textContent = `${result} · ${pendingItems.length} pendiente${pendingItems.length === 1 ? "" : "s"} por aprobar`;
   }
+}
+
+function getPendingProposals() {
+  return proposalsData.filter(row => normalizeText(getRowValue(row, ["Estado Propuesta", "Estado"])) === "pendiente_aprobacion");
+}
+
+function renderRecentChanges() {
+  const panel = document.getElementById("recentChangesPanel");
+  if (!panel) return;
+
+  const rows = getAppliedChangeRows();
+  if (!rows.length) {
+    panel.innerHTML = `<div class="review-empty">No hay nuevos cambios</div>`;
+    return;
+  }
+
+  panel.innerHTML = `<div class="review-list changes-list">${rows.map(row => {
+    const tk = getRowValue(row, ["#TK Redmine", "TK Redmine"]);
+    const accion = getRowValue(row, ["Acción Propuesta", "Accion Propuesta", "Acción", "Accion", "Acción Aplicada", "Accion Aplicada"]);
+    const titulo = getRowValue(row, ["Título", "Titulo"]);
+    const resumen = getRowValue(row, ["Resultado Aplicación", "Resultado Aplicacion", "Resumen Novedad", "Detalle", "Resumen"]);
+    const fecha = getRowValue(row, ["Fecha Aplicación", "Fecha Aplicacion", "Fecha Detección", "Fecha Deteccion", "Fecha"]);
+    const autor = getRowValue(row, ["Aplicado Por", "Autor Novedad", "Autor"]);
+    const link = getRowValue(row, ["Link Redmine"]);
+    const tkText = tk ? `TK #${escapeHtml(tk)}` : "Cambio aplicado";
+    const tkHtml = link ? `<a class="ticket-link" href="${escapeHtml(link)}" target="_blank" rel="noopener noreferrer">${tkText}</a>` : tkText;
+    return `
+      <article class="review-item applied-change">
+        <div class="review-item-header">
+          <strong>${tkHtml}${accion ? ` · ${escapeHtml(accion)}` : ""}</strong>
+          <span>${escapeHtml(fecha || "Sin fecha")}</span>
+        </div>
+        ${titulo ? `<div class="review-title">${escapeHtml(titulo)}</div>` : ""}
+        <div class="review-item-body">${escapeHtml(formatReviewDetail(resumen, "Cambio aplicado"))}</div>
+        ${autor ? `<div class="review-meta">Aplicado por: ${escapeHtml(autor)}</div>` : ""}
+      </article>
+    `;
+  }).join("")}</div>`;
+}
+
+function getAppliedChangeRows() {
+  return [...proposalsData]
+    .filter(row => Object.values(row).some(Boolean))
+    .filter(row => {
+      const estado = normalizeText(getRowValue(row, ["Estado Propuesta", "Estado"]));
+      const fechaAplicacion = getRowValue(row, ["Fecha Aplicación", "Fecha Aplicacion"]);
+      const resultadoAplicacion = getRowValue(row, ["Resultado Aplicación", "Resultado Aplicacion"]);
+      if (estado === "pendiente_aprobacion") return false;
+      return Boolean(fechaAplicacion || resultadoAplicacion || estado.includes("aplic") || estado.includes("ejecut") || estado.includes("realiz"));
+    })
+    .sort((a, b) => {
+      const fechaA = parseDateLike(getRowValue(a, ["Fecha Aplicación", "Fecha Aplicacion", "Fecha Detección", "Fecha Deteccion", "Fecha"]));
+      const fechaB = parseDateLike(getRowValue(b, ["Fecha Aplicación", "Fecha Aplicacion", "Fecha Detección", "Fecha Deteccion", "Fecha"]));
+      return fechaB - fechaA;
+    })
+    .slice(0, 12);
+}
+
+function parseDateLike(value) {
+  const text = String(value || "").trim();
+  if (!text) return 0;
+  const normalized = text
+    .replace(/a\.\s*m\./gi, "AM")
+    .replace(/p\.\s*m\./gi, "PM")
+    .replace(/(\d{1,2})\/(\d{1,2})\/(\d{4})/, "$3-$2-$1");
+  const parsed = Date.parse(normalized);
+  return Number.isNaN(parsed) ? 0 : parsed;
+}
+
+function getRecentReviewRows() {
+  return getAppliedChangeRows();
+}
+
+function getLatestLogResult() {
+  const rows = [...logData].filter(row => Object.values(row).some(Boolean));
+  const latest = rows[rows.length - 1];
+  return latest ? getRowValue(latest, ["Resultado"]) : "";
+}
+
+function formatReviewResult(value) {
+  const text = String(value || "").trim();
+  return normalizeText(text) === "sin_cambios" ? "Sin cambios" : text;
+}
+
+function formatReviewDetail(detail, result) {
+  const text = String(detail || "").trim();
+  const normalized = normalizeText(text);
+  if (!text && normalizeText(result) === "sin_cambios") return "No hay nuevos cambios";
+  if (normalized.includes("no_se_detectaron_novedades") || normalized.includes("no_hay_novedades")) return "No hay nuevos cambios";
+  return text || "Sin detalle";
+}
+
+function renderPendingChanges(items) {
+  const panel = document.getElementById("pendingChangesPanel");
+  if (!panel) return;
+
+  if (!items.length) {
+    panel.innerHTML = `<div class="review-empty">No hay cambios pendientes por aprobar.</div>`;
+    return;
+  }
+
+  panel.innerHTML = `<div class="review-list">${items.map(row => {
+    const tk = getRowValue(row, ["#TK Redmine", "TK Redmine"]);
+    const accion = getRowValue(row, ["Acción Propuesta", "Accion Propuesta", "Acción", "Accion"]);
+    const titulo = getRowValue(row, ["Título", "Titulo"]);
+    const resumen = getRowValue(row, ["Resumen Novedad", "Detalle", "Resumen"]);
+    const fecha = getRowValue(row, ["Fecha Detección", "Fecha Deteccion", "Fecha"]);
+    const autor = getRowValue(row, ["Autor Novedad", "Autor"]);
+    const link = getRowValue(row, ["Link Redmine"]);
+    const tkText = tk ? `TK #${escapeHtml(tk)}` : "Sin TK";
+    const tkHtml = link ? `<a class="ticket-link" href="${escapeHtml(link)}" target="_blank" rel="noopener noreferrer">${tkText}</a>` : tkText;
+    return `
+      <article class="review-item pending">
+        <div class="review-item-header">
+          <strong>${tkHtml} · ${escapeHtml(accion || "Cambio pendiente")}</strong>
+          <span>${escapeHtml(fecha || "Sin fecha")}</span>
+        </div>
+        <div class="review-title">${escapeHtml(titulo || "Sin título")}</div>
+        <div class="review-item-body">${escapeHtml(resumen || "Sin resumen")}</div>
+        <div class="review-meta">Autor novedad: ${escapeHtml(autor || "Sin autor")} · Estado: Pendiente de aprobación</div>
+      </article>
+    `;
+  }).join("")}</div>`;
+}
+
+function getRowValue(row, aliases) {
+  for (const alias of aliases) {
+    if (Object.prototype.hasOwnProperty.call(row, alias) && String(row[alias] || "").trim() !== "") return String(row[alias]).trim();
+  }
+  const normalizedAliases = aliases.map(normalizeHeader);
+  const foundKey = Object.keys(row).find(key => normalizedAliases.includes(normalizeHeader(key)));
+  return foundKey ? String(row[foundKey] || "").trim() : "";
 }
 
 
