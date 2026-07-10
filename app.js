@@ -8,10 +8,11 @@ const SHEET_ID = "1dMNdIcdRSjGE5RZmBN-ygSmu4O4S6060jd4pkq33-qE";
 const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=764769884`;
 const PROPOSALS_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=764769885`;
 const LOG_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=764769886`;
+const MANUAL_CHANGES_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=764769888`;
 const REDMINE_BASE_URL = "https://redmine.fibrazo.com.co/issues/";
 const DEFAULT_AREA_FILTER = "Growth";
 let suppressDefaultAreaFilter = false;
-const COLUMN_STORAGE_KEY = "dashboardRedmineVisibleColumnsV26";
+const COLUMN_STORAGE_KEY = "dashboardRedmineVisibleColumnsV29";
 
 let allTickets = [];
 let currentFilteredTickets = [];
@@ -20,6 +21,7 @@ let visibleColumns = {};
 let dashboardStatus = { lastUpdate: "", nextUpdate: "", pendingProposals: "", lastResult: "" };
 let proposalsData = [];
 let logData = [];
+let manualChangesData = [];
 
 const searchInput = document.getElementById("searchInput");
 const clearFiltersBtn = document.getElementById("clearFiltersBtn");
@@ -70,10 +72,11 @@ const filters = {
 async function initDashboard() {
   try {
     const cacheBust = Date.now();
-    const [mainResponse, proposalsResponse, logResponse] = await Promise.all([
+    const [mainResponse, proposalsResponse, logResponse, manualResponse] = await Promise.all([
       fetch(`${SHEET_URL}&cacheBust=${cacheBust}`, { cache: "no-store" }),
       fetch(`${PROPOSALS_URL}&cacheBust=${cacheBust}`, { cache: "no-store" }),
-      fetch(`${LOG_URL}&cacheBust=${cacheBust}`, { cache: "no-store" })
+      fetch(`${LOG_URL}&cacheBust=${cacheBust}`, { cache: "no-store" }),
+      fetch(`${MANUAL_CHANGES_URL}&cacheBust=${cacheBust}`, { cache: "no-store" })
     ]);
     if (!mainResponse.ok) throw new Error(`Error HTTP ${mainResponse.status}`);
 
@@ -81,6 +84,7 @@ async function initDashboard() {
     const sheetRows = csvToObjects(csvText);
     proposalsData = proposalsResponse.ok ? csvToObjects(await proposalsResponse.text()) : [];
     logData = logResponse.ok ? csvToObjects(await logResponse.text()) : [];
+    manualChangesData = manualResponse.ok ? csvToObjects(await manualResponse.text()) : [];
     dashboardStatus = extractDashboardStatus(sheetRows);
     allTickets = sheetRows
       .map(normalizeTicket)
@@ -770,31 +774,24 @@ function renderRecentChanges() {
   }
 
   panel.innerHTML = `<div class="review-list changes-list">${rows.map(row => {
-    const tk = getRowValue(row, ["#TK Redmine", "TK Redmine"]);
-    const accion = getRowValue(row, ["Acción Propuesta", "Accion Propuesta", "Acción", "Accion", "Acción Aplicada", "Accion Aplicada"]);
-    const titulo = getRowValue(row, ["Título", "Titulo"]);
-    const resumen = getRowValue(row, ["Resultado Aplicación", "Resultado Aplicacion", "Resumen Novedad", "Detalle", "Resumen"]);
-    const fecha = getRowValue(row, ["Fecha Aplicación", "Fecha Aplicacion", "Fecha Detección", "Fecha Deteccion", "Fecha"]);
-    const autor = getRowValue(row, ["Aplicado Por", "Autor Novedad", "Autor"]);
-    const link = getRowValue(row, ["Link Redmine"]);
-    const tkText = tk ? `TK #${escapeHtml(tk)}` : "Cambio aplicado";
-    const tkHtml = link ? `<a class="ticket-link" href="${escapeHtml(link)}" target="_blank" rel="noopener noreferrer">${tkText}</a>` : tkText;
+    const tkText = row.tk ? `TK #${escapeHtml(row.tk)}` : escapeHtml(row.title || "Cambio registrado");
+    const tkHtml = row.link ? `<a class="ticket-link" href="${escapeHtml(row.link)}" target="_blank" rel="noopener noreferrer">${tkText}</a>` : tkText;
     return `
-      <article class="review-item applied-change">
+      <article class="review-item applied-change ${row.sourceType === "manual" ? "manual-change" : ""}">
         <div class="review-item-header">
-          <strong>${tkHtml}${accion ? ` · ${escapeHtml(accion)}` : ""}</strong>
-          <span>${escapeHtml(fecha || "Sin fecha")}</span>
+          <strong>${tkHtml}${row.action ? ` · ${escapeHtml(row.action)}` : ""}</strong>
+          <span>${escapeHtml(row.date || "Sin fecha")}</span>
         </div>
-        ${titulo ? `<div class="review-title">${escapeHtml(titulo)}</div>` : ""}
-        <div class="review-item-body">${escapeHtml(formatReviewDetail(resumen, "Cambio aplicado"))}</div>
-        ${autor ? `<div class="review-meta">Aplicado por: ${escapeHtml(autor)}</div>` : ""}
+        ${row.title ? `<div class="review-title">${escapeHtml(row.title)}</div>` : ""}
+        <div class="review-item-body">${escapeHtml(row.summary || "Cambio registrado")}</div>
+        ${row.author ? `<div class="review-meta">${row.sourceType === "manual" ? "Editado por" : "Aplicado por"}: ${escapeHtml(row.author)}</div>` : ""}
       </article>
     `;
   }).join("")}</div>`;
 }
 
 function getAppliedChangeRows() {
-  return [...proposalsData]
+  const appliedProposals = [...proposalsData]
     .filter(row => Object.values(row).some(Boolean))
     .filter(row => {
       const estado = normalizeText(getRowValue(row, ["Estado Propuesta", "Estado"]));
@@ -803,12 +800,52 @@ function getAppliedChangeRows() {
       if (estado === "pendiente_aprobacion") return false;
       return Boolean(fechaAplicacion || resultadoAplicacion || estado.includes("aplic") || estado.includes("ejecut") || estado.includes("realiz"));
     })
-    .sort((a, b) => {
-      const fechaA = parseDateLike(getRowValue(a, ["Fecha Aplicación", "Fecha Aplicacion", "Fecha Detección", "Fecha Deteccion", "Fecha"]));
-      const fechaB = parseDateLike(getRowValue(b, ["Fecha Aplicación", "Fecha Aplicacion", "Fecha Detección", "Fecha Deteccion", "Fecha"]));
-      return fechaB - fechaA;
+    .map(row => {
+      const tk = getRowValue(row, ["#TK Redmine", "TK Redmine"]);
+      return {
+        sourceType: "applied",
+        tk,
+        action: getRowValue(row, ["Acción Propuesta", "Accion Propuesta", "Acción", "Accion", "Acción Aplicada", "Accion Aplicada"]),
+        title: getRowValue(row, ["Título", "Titulo"]),
+        summary: formatReviewDetail(getRowValue(row, ["Resultado Aplicación", "Resultado Aplicacion", "Resumen Novedad", "Detalle", "Resumen"]), "Cambio aplicado"),
+        date: getRowValue(row, ["Fecha Aplicación", "Fecha Aplicacion", "Fecha Detección", "Fecha Deteccion", "Fecha"]),
+        author: getRowValue(row, ["Aplicado Por", "Autor Novedad", "Autor"]),
+        link: getRowValue(row, ["Link Redmine"]),
+        sortDate: parseDateLike(getRowValue(row, ["Fecha Aplicación", "Fecha Aplicacion", "Fecha Detección", "Fecha Deteccion", "Fecha"]))
+      };
+    });
+
+  const manualChanges = [...manualChangesData]
+    .filter(row => Object.values(row).some(Boolean))
+    .filter(row => {
+      const estado = normalizeText(getRowValue(row, ["Estado"]));
+      return estado === "aprobado_dash" || estado === "aprobado" || estado === "visible_dash" || estado === "publicado";
     })
-    .slice(0, 12);
+    .map(row => {
+      const tk = getRowValue(row, ["#TK Redmine", "TK Redmine"]);
+      const field = getRowValue(row, ["Campo Modificado", "Campo"]);
+      const oldValue = getRowValue(row, ["Valor Anterior"]);
+      const newValue = getRowValue(row, ["Valor Nuevo"]);
+      const detail = getRowValue(row, ["Detalle"]);
+      const summary = field === "Edición múltiple"
+        ? detail || "Edición múltiple registrada"
+        : `${field || "Campo"}: ${oldValue || "vacío"} → ${newValue || "vacío"}`;
+      return {
+        sourceType: "manual",
+        tk,
+        action: "Cambio manual aprobado",
+        title: field || "Cambio manual",
+        summary,
+        date: getRowValue(row, ["Fecha Cambio", "Fecha"]),
+        author: "",
+        link: tk ? `${REDMINE_BASE_URL}${tk}` : "",
+        sortDate: parseDateLike(getRowValue(row, ["Fecha Cambio", "Fecha"]))
+      };
+    });
+
+  return [...appliedProposals, ...manualChanges]
+    .sort((a, b) => b.sortDate - a.sortDate)
+    .slice(0, 20);
 }
 
 function parseDateLike(value) {
