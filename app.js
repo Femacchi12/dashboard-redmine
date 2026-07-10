@@ -4,17 +4,17 @@
 const LAST_AI_REVIEW_AT = "2026-07-09T15:47:23-05:00";
 const AI_REVIEW_INTERVAL_HOURS = 4;
 
-const SHEET_URL = "https://docs.google.com/spreadsheets/d/1ORFQFPdlG0Jmy3QFy0vIw_xyIu8t3ioKPTlO9FjJMQ0/gviz/tq?tqx=out:csv&gid=1462054165";
+const SHEET_URL = "https://docs.google.com/spreadsheets/d/1dMNdIcdRSjGE5RZmBN-ygSmu4O4S6060jd4pkq33-qE/gviz/tq?tqx=out:csv&gid=764769884";
 const REDMINE_BASE_URL = "https://redmine.fibrazo.com.co/issues/";
 const DEFAULT_AREA_FILTER = "Growth";
 let suppressDefaultAreaFilter = false;
-const COLUMN_STORAGE_KEY = "dashboardRedmineVisibleColumnsV23";
+const COLUMN_STORAGE_KEY = "dashboardRedmineVisibleColumnsV24";
 
 let allTickets = [];
 let currentFilteredTickets = [];
 let sortState = { field: "edad", direction: "desc" ,visible:true};
 let visibleColumns = {};
-let dashboardStatus = { lastUpdate: "", nextUpdate: "" };
+let dashboardStatus = { lastUpdate: "", nextUpdate: "", pendingProposals: "", lastResult: "" };
 
 const searchInput = document.getElementById("searchInput");
 const clearFiltersBtn = document.getElementById("clearFiltersBtn");
@@ -150,16 +150,20 @@ function extractDashboardStatus(rows) {
 
   const lastAliases = ["Última actualización", "Ultima actualizacion", "Última Actualización", "Ultima Actualizacion"];
   const nextAliases = ["Próxima actualización", "Proxima actualizacion", "Próxima Actualización", "Proxima Actualizacion"];
+  const pendingAliases = ["Propuestas pendientes", "Propuestas Pendientes", "Pendientes aprobación", "Pendientes aprobacion"];
+  const resultAliases = ["Último resultado revisión", "Ultimo resultado revision", "Último Resultado Revisión", "Ultimo Resultado Revision"];
 
   for (const row of rows) {
     const lastUpdate = getFromRow(row, lastAliases);
     const nextUpdate = getFromRow(row, nextAliases);
-    if (lastUpdate || nextUpdate) {
-      return { lastUpdate, nextUpdate };
+    const pendingProposals = getFromRow(row, pendingAliases);
+    const lastResult = getFromRow(row, resultAliases);
+    if (lastUpdate || nextUpdate || pendingProposals || lastResult) {
+      return { lastUpdate, nextUpdate, pendingProposals, lastResult };
     }
   }
 
-  return { lastUpdate: "", nextUpdate: "" };
+  return { lastUpdate: "", nextUpdate: "", pendingProposals: "", lastResult: "" };
 }
 
 function normalizeTicket(ticket) {
@@ -678,6 +682,7 @@ function calculateNextAiReview(lastDate) {
 function renderReviewStatus() {
   const lastAiReviewEl = document.getElementById("lastAiReview");
   const nextAiReviewEl = document.getElementById("nextAiReview");
+  const pendingProposalsEl = document.getElementById("pendingProposals");
 
   if (lastAiReviewEl) {
     lastAiReviewEl.textContent = dashboardStatus.lastUpdate || formatDashboardDateTime(new Date(LAST_AI_REVIEW_AT));
@@ -686,6 +691,12 @@ function renderReviewStatus() {
   if (nextAiReviewEl) {
     const fallbackNextReview = calculateNextAiReview(new Date(LAST_AI_REVIEW_AT));
     nextAiReviewEl.textContent = dashboardStatus.nextUpdate || formatDashboardDateTime(fallbackNextReview);
+  }
+
+  if (pendingProposalsEl) {
+    const pending = dashboardStatus.pendingProposals || "0";
+    const result = dashboardStatus.lastResult ? ` · ${dashboardStatus.lastResult}` : "";
+    pendingProposalsEl.textContent = `${pending}${result}`;
   }
 }
 
