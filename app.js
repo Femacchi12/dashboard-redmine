@@ -22,6 +22,8 @@ let dashboardStatus = { lastUpdate: "", nextUpdate: "", pendingProposals: "", la
 let proposalsData = [];
 let logData = [];
 let manualChangesData = [];
+let showAllRecentChanges = false;
+const RECENT_CHANGES_INITIAL_LIMIT = 10;
 
 const searchInput = document.getElementById("searchInput");
 const clearFiltersBtn = document.getElementById("clearFiltersBtn");
@@ -364,6 +366,7 @@ function applyFilters() {
   renderStatusChart(filtered);
   renderPriorityChart(filtered);
   renderTable(filtered);
+  renderReviewTabs();
 }
 
 function matchesMultiFilter(ticket, filter) {
@@ -746,16 +749,23 @@ function setupReviewToggle() {
 
 function renderReviewTabs() {
   const pendingItems = getPendingProposals();
+  const pendingInfo = renderPendingChanges(pendingItems);
   renderRecentChanges();
-  renderPendingChanges(pendingItems);
 
   const pendingBadge = document.getElementById("pendingBadge");
-  if (pendingBadge) pendingBadge.textContent = pendingItems.length;
+  if (pendingBadge) {
+    if (pendingInfo.total && pendingInfo.visible !== pendingInfo.total) {
+      pendingBadge.textContent = `${pendingInfo.visible}/${pendingInfo.total}`;
+      pendingBadge.title = `${pendingInfo.visible} pendientes visibles con los filtros actuales de ${pendingInfo.total} pendientes totales`;
+    } else {
+      pendingBadge.textContent = pendingInfo.visible;
+      pendingBadge.title = `${pendingInfo.visible} pendientes por aprobar`;
+    }
+  }
 
   const reviewSummary = document.getElementById("reviewSummary");
   if (reviewSummary) {
-    const result = formatReviewResult(dashboardStatus.lastResult || getLatestLogResult() || "Última revisión registrada");
-    reviewSummary.textContent = `${result} · ${pendingItems.length} pendiente${pendingItems.length === 1 ? "" : "s"} por aprobar`;
+    reviewSummary.textContent = "";
   }
 }
 
@@ -767,85 +777,291 @@ function renderRecentChanges() {
   const panel = document.getElementById("recentChangesPanel");
   if (!panel) return;
 
-  const rows = getAppliedChangeRows();
+  const allRows = getAppliedChangeRows();
+  const rows = filterTrackingRowsByVisibleTickets(allRows);
   if (!rows.length) {
     panel.innerHTML = `<div class="review-empty">No hay nuevos cambios</div>`;
     return;
   }
 
-  panel.innerHTML = `<div class="review-list changes-list">${rows.map(row => {
+  const visibleRows = showAllRecentChanges ? rows : rows.slice(0, RECENT_CHANGES_INITIAL_LIMIT);
+  const hasMoreRows = rows.length > RECENT_CHANGES_INITIAL_LIMIT;
+  const listHtml = `<div class="review-list changes-list single-line-changes-list">${visibleRows.map(row => {
     const tkText = row.tk ? `TK #${escapeHtml(row.tk)}` : escapeHtml(row.title || "Cambio registrado");
     const tkHtml = row.link ? `<a class="ticket-link" href="${escapeHtml(row.link)}" target="_blank" rel="noopener noreferrer">${tkText}</a>` : tkText;
+    const title = row.title ? ` | ${escapeHtml(row.title)}` : "";
     return `
-      <article class="review-item applied-change ${row.sourceType === "manual" ? "manual-change" : ""}">
-        <div class="review-item-header">
-          <strong>${tkHtml}${row.action ? ` · ${escapeHtml(row.action)}` : ""}</strong>
-          <span>${escapeHtml(row.date || "Sin fecha")}</span>
+      <article class="review-item applied-change single-line-change ${row.sourceType === "manual" ? "manual-change" : ""}">
+        <div class="single-change-top">
+          <div class="single-change-title"><strong>${tkHtml}</strong>${title}</div>
+          <time>${escapeHtml(row.date || "Sin fecha")}</time>
         </div>
-        ${row.title ? `<div class="review-title">${escapeHtml(row.title)}</div>` : ""}
-        <div class="review-item-body">${escapeHtml(row.summary || "Cambio registrado")}</div>
-        ${row.author ? `<div class="review-meta">${row.sourceType === "manual" ? "Editado por" : "Aplicado por"}: ${escapeHtml(row.author)}</div>` : ""}
+        <div class="single-change-summary">${escapeHtml(row.summary || "Cambio registrado")}</div>
       </article>
     `;
   }).join("")}</div>`;
+
+  const moreButtonHtml = hasMoreRows
+    ? `<div class="review-more-actions">
+        <button id="toggleRecentChangesLimit" type="button" class="review-more-btn">
+          ${showAllRecentChanges ? "Ver solo las últimas 10" : `Ver más actualizaciones (${rows.length - RECENT_CHANGES_INITIAL_LIMIT})`}
+        </button>
+      </div>`
+    : "";
+
+  panel.innerHTML = `${listHtml}${moreButtonHtml}`;
+
+  const toggleButton = document.getElementById("toggleRecentChangesLimit");
+  if (toggleButton) {
+    toggleButton.addEventListener("click", event => {
+      event.stopPropagation();
+      showAllRecentChanges = !showAllRecentChanges;
+      renderRecentChanges();
+    });
+  }
 }
 
 function getAppliedChangeRows() {
-  const appliedProposals = [...proposalsData]
+  const appliedProposals = groupAppliedProposalsByTicket([...proposalsData]
     .filter(row => Object.values(row).some(Boolean))
-    .filter(row => {
-      const estado = normalizeText(getRowValue(row, ["Estado Propuesta", "Estado"]));
-      const fechaAplicacion = getRowValue(row, ["Fecha Aplicación", "Fecha Aplicacion"]);
-      const resultadoAplicacion = getRowValue(row, ["Resultado Aplicación", "Resultado Aplicacion"]);
-      if (estado === "pendiente_aprobacion") return false;
-      return Boolean(fechaAplicacion || resultadoAplicacion || estado.includes("aplic") || estado.includes("ejecut") || estado.includes("realiz"));
-    })
-    .map(row => {
-      const tk = getRowValue(row, ["#TK Redmine", "TK Redmine"]);
-      return {
-        sourceType: "applied",
-        tk,
-        action: getRowValue(row, ["Acción Propuesta", "Accion Propuesta", "Acción", "Accion", "Acción Aplicada", "Accion Aplicada"]),
-        title: getRowValue(row, ["Título", "Titulo"]),
-        summary: formatReviewDetail(getRowValue(row, ["Resultado Aplicación", "Resultado Aplicacion", "Resumen Novedad", "Detalle", "Resumen"]), "Cambio aplicado"),
-        date: getRowValue(row, ["Fecha Aplicación", "Fecha Aplicacion", "Fecha Detección", "Fecha Deteccion", "Fecha"]),
-        author: getRowValue(row, ["Aplicado Por", "Autor Novedad", "Autor"]),
-        link: getRowValue(row, ["Link Redmine"]),
-        sortDate: parseDateLike(getRowValue(row, ["Fecha Aplicación", "Fecha Aplicacion", "Fecha Detección", "Fecha Deteccion", "Fecha"]))
-      };
-    });
+    .filter(isAppliedProposal));
 
-  const manualChanges = [...manualChangesData]
+  const manualChanges = groupManualChangesByTicket([...manualChangesData]
     .filter(row => Object.values(row).some(Boolean))
     .filter(row => {
       const estado = normalizeText(getRowValue(row, ["Estado"]));
       return estado === "aprobado_dash" || estado === "aprobado" || estado === "visible_dash" || estado === "publicado";
-    })
-    .map(row => {
-      const tk = getRowValue(row, ["#TK Redmine", "TK Redmine"]);
-      const field = getRowValue(row, ["Campo Modificado", "Campo"]);
-      const oldValue = getRowValue(row, ["Valor Anterior"]);
-      const newValue = getRowValue(row, ["Valor Nuevo"]);
-      const detail = getRowValue(row, ["Detalle"]);
-      const summary = field === "Edición múltiple"
-        ? detail || "Edición múltiple registrada"
-        : `${field || "Campo"}: ${oldValue || "vacío"} → ${newValue || "vacío"}`;
-      return {
-        sourceType: "manual",
-        tk,
-        action: "Cambio manual aprobado",
-        title: field || "Cambio manual",
-        summary,
-        date: getRowValue(row, ["Fecha Cambio", "Fecha"]),
-        author: "",
-        link: tk ? `${REDMINE_BASE_URL}${tk}` : "",
-        sortDate: parseDateLike(getRowValue(row, ["Fecha Cambio", "Fecha"]))
-      };
-    });
+    }));
 
   return [...appliedProposals, ...manualChanges]
     .sort((a, b) => b.sortDate - a.sortDate)
-    .slice(0, 20);
+    .slice(0, 80);
+}
+
+function isAppliedProposal(row) {
+  const estado = normalizeText(getRowValue(row, ["Estado Propuesta", "Estado"]));
+  const fechaAplicacion = getRowValue(row, ["Fecha Aplicación", "Fecha Aplicacion"]);
+  const resultadoAplicacion = getRowValue(row, ["Resultado Aplicación", "Resultado Aplicacion"]);
+  if (estado === "pendiente_aprobacion") return false;
+  return Boolean(fechaAplicacion || resultadoAplicacion || estado.includes("aplic") || estado.includes("ejecut") || estado.includes("realiz"));
+}
+
+function groupAppliedProposalsByTicket(rows) {
+  const groups = new Map();
+
+  rows.forEach((row, index) => {
+    const tk = getRowValue(row, ["#TK Redmine", "TK Redmine"]);
+    const applicationDate = getRowValue(row, ["Fecha Aplicación", "Fecha Aplicacion", "Fecha Detección", "Fecha Deteccion", "Fecha"]);
+    const dateKey = normalizeDateMinute(applicationDate);
+    const key = `${dateKey || "sin_fecha"}__${tk || "sin_tk"}`;
+    const parsed = safeParseJson(getRowValue(row, ["Datos JSON Propuesto", "Datos JSON", "JSON"]));
+    const changes = parsed && parsed.changes && typeof parsed.changes === "object" ? parsed.changes : {};
+    const summary = getRowValue(row, ["Resumen Novedad", "Detalle", "Resumen"]);
+    const result = getRowValue(row, ["Resultado Aplicación", "Resultado Aplicacion"]) || "OK";
+
+    if (!groups.has(key)) {
+      groups.set(key, {
+        sourceType: "applied",
+        tk,
+        action: "Actualización Redmine",
+        title: getRowValue(row, ["Título", "Titulo"]),
+        date: applicationDate,
+        author: getRowValue(row, ["Aplicado Por", "Autor Novedad", "Autor"]),
+        link: getRowValue(row, ["Link Redmine"]) || (tk ? `${REDMINE_BASE_URL}${tk}` : ""),
+        sortDate: parseDateLike(applicationDate) || index,
+        result,
+        count: 0,
+        fieldSet: new Set(),
+        statusMap: new Map(),
+        genericNotes: []
+      });
+    }
+
+    const group = groups.get(key);
+    group.count += 1;
+    group.sortDate = Math.max(group.sortDate || 0, parseDateLike(applicationDate) || 0);
+    if (!group.title) group.title = getRowValue(row, ["Título", "Titulo"]);
+    if (!group.date) group.date = applicationDate;
+    if (!group.author) group.author = getRowValue(row, ["Aplicado Por", "Autor Novedad", "Autor"]);
+    if (!group.result || group.result === "OK") group.result = result || "OK";
+
+    Object.entries(changes).forEach(([field, value]) => {
+      const fieldName = normalizeDisplayField(field);
+      if (!fieldName) return;
+      group.fieldSet.add(fieldName);
+      if (isStatusField(fieldName)) {
+        group.statusMap.set(fieldName, extractFieldChangeText(fieldName, summary, value));
+      }
+    });
+
+    const statusFromSummary = extractStatusChangeFromText(summary);
+    if (statusFromSummary) {
+      group.statusMap.set("Estado Redmine", statusFromSummary);
+      group.fieldSet.add("Estado Redmine");
+    }
+
+    if (!Object.keys(changes).length && summary) {
+      group.genericNotes.push(summary);
+    }
+  });
+
+  return [...groups.values()].map(group => {
+    const statusParts = [...group.statusMap.values()].filter(Boolean);
+    const otherFields = [...group.fieldSet].filter(field => !isStatusField(field));
+    const otherPart = otherFields.length ? `Campos actualizados: ${formatFieldList(otherFields)}` : "";
+    const fallback = group.genericNotes.length ? "Novedad actualizada" : "Cambio aplicado";
+    return {
+      sourceType: group.sourceType,
+      tk: group.tk,
+      action: group.action,
+      title: group.title,
+      summary: [...statusParts, otherPart].filter(Boolean).join(" · ") || fallback,
+      date: group.date,
+      author: group.author,
+      link: group.link,
+      sortDate: group.sortDate,
+      result: group.result || "OK",
+      count: group.count
+    };
+  });
+}
+
+function groupManualChangesByTicket(rows) {
+  const groups = new Map();
+
+  rows.forEach((row, index) => {
+    const tk = getRowValue(row, ["#TK Redmine", "TK Redmine"]);
+    const date = getRowValue(row, ["Fecha Cambio", "Fecha"]);
+    const dateKey = normalizeDateMinute(date);
+    const key = `${dateKey || "sin_fecha"}__${tk || "sin_tk"}`;
+    const field = normalizeDisplayField(getRowValue(row, ["Campo Modificado", "Campo"]));
+    const oldValue = getRowValue(row, ["Valor Anterior"]);
+    const newValue = getRowValue(row, ["Valor Nuevo"]);
+    const detail = getRowValue(row, ["Detalle"]);
+
+    if (!groups.has(key)) {
+      groups.set(key, {
+        sourceType: "manual",
+        tk,
+        action: "Cambio manual aprobado",
+        title: "Cambios manuales aprobados",
+        date,
+        author: "",
+        link: tk ? `${REDMINE_BASE_URL}${tk}` : "",
+        sortDate: parseDateLike(date) || index,
+        result: "OK",
+        count: 0,
+        fieldSet: new Set(),
+        statusMap: new Map(),
+        details: []
+      });
+    }
+
+    const group = groups.get(key);
+    group.count += 1;
+    group.sortDate = Math.max(group.sortDate || 0, parseDateLike(date) || 0);
+    if (field) group.fieldSet.add(field);
+    if (field && isStatusField(field)) {
+      group.statusMap.set(field, `${field}: ${oldValue || "vacío"} → ${newValue || "vacío"}`);
+    }
+    if (detail) group.details.push(detail);
+  });
+
+  return [...groups.values()].map(group => {
+    const statusParts = [...group.statusMap.values()].filter(Boolean);
+    const otherFields = [...group.fieldSet].filter(field => !isStatusField(field));
+    const otherPart = otherFields.length ? `Campos actualizados: ${formatFieldList(otherFields)}` : "";
+    return {
+      sourceType: group.sourceType,
+      tk: group.tk,
+      action: group.action,
+      title: group.title,
+      summary: [...statusParts, otherPart].filter(Boolean).join(" · ") || "Cambio manual aprobado",
+      date: group.date,
+      author: group.author,
+      link: group.link,
+      sortDate: group.sortDate,
+      result: group.result,
+      count: group.count
+    };
+  });
+}
+
+function safeParseJson(value) {
+  const text = String(value || "").trim();
+  if (!text) return null;
+  try { return JSON.parse(text); } catch (error) { return null; }
+}
+
+function normalizeDisplayField(field) {
+  const text = String(field || "").trim();
+  if (!text) return "";
+  const normalized = normalizeHeader(text);
+  const aliases = {
+    "estado_redmine": "Estado Redmine",
+    "estado_operativo": "Estado Operativo",
+    "version_prevista": "Versión Prevista",
+    "ultima_novedad": "Última Novedad",
+    "stakeholder": "Stakeholder",
+    "asignado_a": "Asignado A",
+    "prioridad_redmine": "Prioridad Redmine",
+    "tipo_redmine": "Tipo Redmine",
+    "plataforma": "Plataforma",
+    "fecha_cierre": "Fecha Cierre",
+    "fecha_creacion": "Fecha Creación",
+    "complexity": "Complexity",
+    "impacto": "Impacto",
+    "doc": "Doc",
+    "edicion_multiple": "Edición múltiple"
+  };
+  return aliases[normalized] || text;
+}
+
+function isStatusField(field) {
+  const normalized = normalizeHeader(field);
+  return normalized === "estado_redmine" || normalized === "estado_operativo";
+}
+
+function extractFieldChangeText(fieldName, summary, value) {
+  const parsed = fieldName === "Estado Redmine"
+    ? extractStatusChangeFromText(summary)
+    : extractNamedChangeFromText(summary, fieldName);
+  if (parsed) return parsed;
+  return `${fieldName}: actualizado${value ? ` a ${value}` : ""}`;
+}
+
+function extractStatusChangeFromText(text) {
+  const parsed = extractNamedChangeFromText(text, "Estado");
+  return parsed ? parsed.replace(/^Estado:/, "Estado Redmine:") : "";
+}
+
+function extractNamedChangeFromText(text, label) {
+  const value = String(text || "");
+  if (!value) return "";
+  const escaped = label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const regex = new RegExp(`${escaped}\\s+cambiad[oa]\\s+de\\s+(.+?)\\s+a\\s+([^;\\n]+)`, "i");
+  const match = value.match(regex);
+  if (!match) return "";
+  const from = cleanChangeValue(match[1]);
+  const to = cleanChangeValue(match[2]);
+  return `${label}: ${from} → ${to}`;
+}
+
+function cleanChangeValue(value) {
+  return String(value || "").replace(/^["'“”]+|["'“”]+$/g, "").trim();
+}
+
+function formatFieldList(fields) {
+  const clean = [...new Set(fields)].filter(Boolean);
+  if (!clean.length) return "Sin campos";
+  if (clean.length <= 4) return clean.join(", ");
+  return `${clean.slice(0, 4).join(", ")} +${clean.length - 4} más`;
+}
+
+function normalizeDateMinute(value) {
+  const text = String(value || "").trim();
+  if (!text) return "";
+  return text.replace(/:\d{2}(\s*(AM|PM|a\.\s*m\.|p\.\s*m\.))?$/i, "").trim();
 }
 
 function parseDateLike(value) {
@@ -884,35 +1100,109 @@ function formatReviewDetail(detail, result) {
 
 function renderPendingChanges(items) {
   const panel = document.getElementById("pendingChangesPanel");
-  if (!panel) return;
+  const allGroupedItems = groupPendingProposalsByTicket(items);
+  const groupedItems = filterTrackingRowsByVisibleTickets(allGroupedItems);
 
-  if (!items.length) {
-    panel.innerHTML = `<div class="review-empty">No hay cambios pendientes por aprobar.</div>`;
-    return;
+  if (!panel) return { visible: groupedItems.length, total: allGroupedItems.length };
+
+  if (!groupedItems.length) {
+    const hiddenNote = allGroupedItems.length ? `<div class="review-filter-note">Hay ${allGroupedItems.length} pendiente(s) total(es), pero no coinciden con los filtros actuales.</div>` : "";
+    panel.innerHTML = `<div class="review-empty">No hay cambios pendientes por aprobar.</div>${hiddenNote}`;
+    return { visible: groupedItems.length, total: allGroupedItems.length };
   }
 
-  panel.innerHTML = `<div class="review-list">${items.map(row => {
-    const tk = getRowValue(row, ["#TK Redmine", "TK Redmine"]);
-    const accion = getRowValue(row, ["Acción Propuesta", "Accion Propuesta", "Acción", "Accion"]);
-    const titulo = getRowValue(row, ["Título", "Titulo"]);
-    const resumen = getRowValue(row, ["Resumen Novedad", "Detalle", "Resumen"]);
-    const fecha = getRowValue(row, ["Fecha Detección", "Fecha Deteccion", "Fecha"]);
-    const autor = getRowValue(row, ["Autor Novedad", "Autor"]);
-    const link = getRowValue(row, ["Link Redmine"]);
-    const tkText = tk ? `TK #${escapeHtml(tk)}` : "Sin TK";
-    const tkHtml = link ? `<a class="ticket-link" href="${escapeHtml(link)}" target="_blank" rel="noopener noreferrer">${tkText}</a>` : tkText;
+  panel.innerHTML = `<div class="review-list single-line-changes-list">${groupedItems.map(row => {
+    const tkText = row.tk ? `TK #${escapeHtml(row.tk)}` : "Sin TK";
+    const tkHtml = row.link ? `<a class="ticket-link" href="${escapeHtml(row.link)}" target="_blank" rel="noopener noreferrer">${tkText}</a>` : tkText;
+    const title = row.title ? ` | ${escapeHtml(row.title)}` : "";
     return `
-      <article class="review-item pending">
-        <div class="review-item-header">
-          <strong>${tkHtml} · ${escapeHtml(accion || "Cambio pendiente")}</strong>
-          <span>${escapeHtml(fecha || "Sin fecha")}</span>
+      <article class="review-item pending single-line-change">
+        <div class="single-change-top">
+          <div class="single-change-title"><strong>${tkHtml}</strong>${title}</div>
+          <time>${escapeHtml(row.date || "Sin fecha")}</time>
         </div>
-        <div class="review-title">${escapeHtml(titulo || "Sin título")}</div>
-        <div class="review-item-body">${escapeHtml(resumen || "Sin resumen")}</div>
-        <div class="review-meta">Autor novedad: ${escapeHtml(autor || "Sin autor")} · Estado: Pendiente de aprobación</div>
+        <div class="single-change-summary">${escapeHtml(row.summary || "Cambio pendiente")}</div>
       </article>
     `;
   }).join("")}</div>`;
+
+  return { visible: groupedItems.length, total: allGroupedItems.length };
+}
+
+function filterTrackingRowsByVisibleTickets(rows) {
+  if (!Array.isArray(currentFilteredTickets) || !currentFilteredTickets.length) return [];
+  const visibleTickets = new Set(currentFilteredTickets.map(ticket => normalizeTicketKey(ticket.tkPadre)).filter(Boolean));
+  return rows.filter(row => visibleTickets.has(normalizeTicketKey(row.tk)));
+}
+
+function normalizeTicketKey(value) {
+  return String(value || "").trim().replace(/^#/, "").toLowerCase();
+}
+
+function groupPendingProposalsByTicket(rows) {
+  const groups = new Map();
+
+  rows.forEach((row, index) => {
+    const tk = getRowValue(row, ["#TK Redmine", "TK Redmine"]);
+    const date = getRowValue(row, ["Fecha Detección", "Fecha Deteccion", "Fecha"]);
+    const dateKey = normalizeDateMinute(date);
+    const key = `${dateKey || "sin_fecha"}__${tk || "sin_tk"}`;
+    const parsed = safeParseJson(getRowValue(row, ["Datos JSON Propuesto", "Datos JSON", "JSON"]));
+    const changes = parsed && parsed.changes && typeof parsed.changes === "object" ? parsed.changes : {};
+    const summary = getRowValue(row, ["Resumen Novedad", "Detalle", "Resumen"]);
+
+    if (!groups.has(key)) {
+      groups.set(key, {
+        tk,
+        title: getRowValue(row, ["Título", "Titulo"]),
+        date,
+        link: getRowValue(row, ["Link Redmine"]) || (tk ? `${REDMINE_BASE_URL}${tk}` : ""),
+        count: 0,
+        sortDate: parseDateLike(date) || index,
+        fieldSet: new Set(),
+        statusMap: new Map(),
+        genericNotes: []
+      });
+    }
+
+    const group = groups.get(key);
+    group.count += 1;
+    group.sortDate = Math.max(group.sortDate || 0, parseDateLike(date) || 0);
+    if (!group.title) group.title = getRowValue(row, ["Título", "Titulo"]);
+
+    Object.entries(changes).forEach(([field, value]) => {
+      const fieldName = normalizeDisplayField(field);
+      if (!fieldName) return;
+      group.fieldSet.add(fieldName);
+      if (isStatusField(fieldName)) {
+        group.statusMap.set(fieldName, extractFieldChangeText(fieldName, summary, value));
+      }
+    });
+
+    const statusFromSummary = extractStatusChangeFromText(summary);
+    if (statusFromSummary) {
+      group.statusMap.set("Estado Redmine", statusFromSummary);
+      group.fieldSet.add("Estado Redmine");
+    }
+
+    if (!Object.keys(changes).length && summary) group.genericNotes.push(summary);
+  });
+
+  return [...groups.values()]
+    .sort((a, b) => b.sortDate - a.sortDate)
+    .map(group => {
+      const statusParts = [...group.statusMap.values()].filter(Boolean);
+      const otherFields = [...group.fieldSet].filter(field => !isStatusField(field));
+      const otherPart = otherFields.length ? `Campos por actualizar: ${formatFieldList(otherFields)}` : "";
+      return {
+        tk: group.tk,
+        title: group.title,
+        date: group.date,
+        link: group.link,
+        count: group.count,
+        summary: [...statusParts, otherPart].filter(Boolean).join(" · ") || "Cambio pendiente de aprobación"
+      };
+    });
 }
 
 function getRowValue(row, aliases) {

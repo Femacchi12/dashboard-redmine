@@ -815,3 +815,179 @@ td[data-col="nota"] {
 .review-item.manual-change {
   border-left: 3px solid rgba(34, 197, 94, 0.7);
 }
+
+/* V30 - seguimiento compacto por TK */
+.compact-changes-list{
+  gap:8px;
+}
+.review-item.compact-change{
+  padding:10px 14px;
+}
+.review-compact-main{
+  display:grid;
+  grid-template-columns:minmax(145px,190px) minmax(0,1fr) minmax(120px,160px);
+  gap:14px;
+  align-items:center;
+}
+.compact-ticket-block{
+  display:grid;
+  gap:3px;
+  min-width:0;
+}
+.compact-ticket-block strong{
+  font-size:14px;
+  line-height:1.2;
+  color:#14f195;
+}
+.compact-ticket-block span{
+  color:#8b949e;
+  font-size:11px;
+}
+.compact-change-content{
+  min-width:0;
+}
+.compact-title{
+  margin:0 0 3px;
+  overflow:hidden;
+  white-space:nowrap;
+  text-overflow:ellipsis;
+}
+.compact-summary{
+  margin:0;
+  overflow:hidden;
+  white-space:nowrap;
+  text-overflow:ellipsis;
+  color:#d1d5db;
+}
+.compact-change-status{
+  display:grid;
+  gap:3px;
+  justify-items:end;
+  color:#8b949e;
+  font-size:11px;
+  text-align:right;
+}
+.compact-change-status strong{
+  color:#f4f7f5;
+  font-size:12px;
+}
+@media(max-width:900px){
+  .review-compact-main{
+    grid-template-columns:1fr;
+    gap:7px;
+  }
+  .compact-change-status{
+    justify-items:start;
+    text-align:left;
+  }
+  .compact-title,.compact-summary{
+    white-space:normal;
+  }
+}
+
+/* v31 - Seguimiento más compacto por TK */
+.single-line-changes-list{display:grid;gap:8px}
+.review-item.single-line-change{padding:10px 14px;border-radius:12px;background:#0d1812;border-color:rgba(20,241,149,.28)}
+.review-item.single-line-change.pending{border-color:rgba(251,191,36,.32);background:rgba(251,191,36,.045)}
+.single-change-top{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:14px;margin-bottom:4px}
+.single-change-title{min-width:0;color:#f4f7f5;font-size:14px;font-weight:700;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.single-change-title strong{color:#14f195}
+.single-change-top time{color:#9ca3af;font-size:13px;white-space:nowrap}
+.single-change-summary{color:#d1d5db;font-size:13px;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media(max-width:900px){
+  .single-change-top{grid-template-columns:1fr;gap:3px}
+  .single-change-title,.single-change-summary{white-space:normal}
+}
+
+/* v32 - Seguimiento de actualizaciones más compacto */
+#reviewPanel.review-panel{
+  margin-bottom:14px;
+}
+#reviewPanel.review-panel:not(.collapsed){
+  padding:12px 14px;
+  border-radius:14px;
+}
+#reviewPanel .review-toggle{
+  gap:10px;
+}
+#reviewPanel .review-toggle strong{
+  font-size:15px;
+  line-height:1.15;
+}
+#reviewSummary{
+  display:none !important;
+}
+#reviewPanel .review-toggle-action{
+  min-width:116px;
+  padding:7px 12px;
+  font-size:12px;
+}
+#reviewPanel .review-collapsible-body{
+  margin-top:10px;
+  gap:9px;
+}
+#reviewPanel .review-tabs{
+  gap:6px;
+}
+#reviewPanel .review-tab{
+  min-width:132px;
+  padding:7px 11px;
+  font-size:12px;
+}
+#reviewPanel .tab-badge{
+  min-width:18px;
+  height:18px;
+  padding:0 5px;
+  font-size:10px;
+}
+#reviewPanel .single-line-changes-list{
+  gap:6px;
+}
+#reviewPanel .review-item.single-line-change{
+  padding:8px 12px;
+  border-radius:10px;
+}
+#reviewPanel .single-change-top{
+  margin-bottom:2px;
+  gap:10px;
+}
+#reviewPanel .single-change-title{
+  font-size:12.5px;
+  line-height:1.2;
+}
+#reviewPanel .single-change-top time{
+  font-size:11.5px;
+}
+#reviewPanel .single-change-summary{
+  font-size:11.5px;
+  line-height:1.25;
+}
+#reviewPanel .review-empty{
+  padding:9px 12px;
+  font-size:12px;
+}
+@media(max-width:900px){
+  #reviewPanel .review-tab{min-width:0}
+  #reviewPanel .single-change-top{gap:2px}
+}
+
+
+/* v34 - Ver más en Seguimiento de Actualizaciones */
+#reviewPanel .review-more-actions{
+  display:flex;
+  justify-content:flex-end;
+  margin-top:6px;
+}
+#reviewPanel .review-more-btn{
+  border:1px solid rgba(20,241,149,.35);
+  background:rgba(20,241,149,.08);
+  color:#14f195;
+  border-radius:999px;
+  padding:6px 11px;
+  font-size:11.5px;
+  font-weight:800;
+  cursor:pointer;
+}
+#reviewPanel .review-more-btn:hover{
+  background:rgba(20,241,149,.14);
+}
