@@ -1093,3 +1093,85 @@ td{color:#dbe5e1;font-weight:300}
   .brand-wordmark{font-size:30px}
   .brand-area{letter-spacing:.16em}
 }
+
+/* v37 - Escala compacta y semántica de estados */
+body{font-size:13px}
+.brand-wordmark{font-size:32px}
+.brand-area{font-size:10px}
+.header-main p,.badge{font-size:11px}
+.compact-update-card span{font-size:11.5px}
+.compact-update-card strong{font-size:14px}
+.kpi-card span{font-size:11px}
+.kpi-card strong{font-size:22px}
+.charts-three .panel-header h2,.panel-header h2{font-size:14px}
+.charts-three .bar-label,.charts-three .bar-value{font-size:10.5px}
+.table-wrapper th{font-size:10.5px}
+.table-wrapper td{font-size:11px}
+.table-wrapper .tag,.table-wrapper .manual-pill{font-size:10px}
+
+/* Base común de etiquetas */
+.tag{
+  font-weight:600;
+  border-width:1px;
+}
+
+/* Verde: correcto, resuelto o validado */
+.tag.resolved,.tag.resuelto,
+.tag.closed,.tag.cerrado,
+.tag.validado-ok,
+.tag.validado-por-otra-area,
+.tag.growth{
+  color:#0dffa1;
+  background:rgba(13,255,161,.10);
+  border-color:rgba(13,255,161,.34);
+}
+
+/* Rojo: error, bloqueo, rechazo o ajuste requerido */
+.tag.blocked,.tag.bloqueado,
+.tag.rejected,.tag.rechazado,
+.tag.requiere-ajuste,
+.tag.cancelado-no-aplica{
+  color:#ff6b73;
+  background:rgba(255,70,82,.10);
+  border-color:rgba(255,70,82,.34);
+}
+
+/* Amarillo: pendiente, observación o feedback */
+.tag.feedback,
+.tag.pendiente-de-entrega,
+.tag.pendiente-de-validacion,
+.tag.validado-con-observaciones,
+.tag.en-replanteo,
+.tag.replantear,
+.tag.reeplantear{
+  color:#ffe000;
+  background:rgba(255,224,0,.09);
+  border-color:rgba(255,224,0,.32);
+}
+
+/* Azul: nuevo, construcción o proceso activo */
+.tag.new,.tag.nuevo,
+.tag.in-progress,.tag.en-progreso,
+.tag.en-construccion,
+.tag.en-validacion-operativa{
+  color:#75baff;
+  background:rgba(70,155,255,.10);
+  border-color:rgba(70,155,255,.32);
+}
+
+/* Violeta: derivaciones, análisis y otras áreas */
+.tag.analysis,.tag.analisis,
+.tag.derivado-a-nuevo-tk,
+.tag.otras-areas,
+.tag.otra-area{
+  color:#c99bff;
+  background:rgba(170,105,255,.10);
+  border-color:rgba(170,105,255,.32);
+}
+
+/* Neutro para información incompleta */
+.tag.sin-estado-redmine,.tag.sin-estado-operativo,.tag.sin-area{
+  color:#aebbb5;
+  background:rgba(174,187,181,.08);
+  border-color:rgba(174,187,181,.24);
+}
