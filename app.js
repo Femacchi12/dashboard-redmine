@@ -1,9 +1,4 @@
 
-// Estado visible de revisión IA / correos.
-// Este valor debe actualizarse cuando se haga una revisión real de correos Redmine.
-const LAST_AI_REVIEW_AT = "2026-07-09T15:47:23-05:00";
-const AI_REVIEW_INTERVAL_HOURS = 4;
-
 const SHEET_ID = "1dMNdIcdRSjGE5RZmBN-ygSmu4O4S6060jd4pkq33-qE";
 const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=764769884`;
 const PROPOSALS_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=764769885`;
@@ -24,6 +19,9 @@ let logData = [];
 let manualChangesData = [];
 let showAllRecentChanges = false;
 const RECENT_CHANGES_INITIAL_LIMIT = 10;
+const AUTO_REFRESH_MS = 5 * 60 * 1000;
+let uiInitialized = false;
+let refreshInProgress = false;
 
 const searchInput = document.getElementById("searchInput");
 const clearFiltersBtn = document.getElementById("clearFiltersBtn");
@@ -72,6 +70,8 @@ const filters = {
 };
 
 async function initDashboard() {
+  if (refreshInProgress) return;
+  refreshInProgress = true;
   try {
     const cacheBust = Date.now();
     const [mainResponse, proposalsResponse, logResponse, manualResponse] = await Promise.all([
@@ -99,11 +99,16 @@ async function initDashboard() {
     applyFilters();
     renderReviewStatus();
     renderReviewTabs();
-    setupReviewTabs();
-    setupReviewToggle();
+    if (!uiInitialized) {
+      setupReviewTabs();
+      setupReviewToggle();
+      uiInitialized = true;
+    }
 } catch (error) {
     console.error("Error cargando datos:", error);
     alert("No se pudieron cargar los datos del Google Sheet. Revisa permisos del Sheet, filtros activos en la hoja o caché del navegador.");
+  } finally {
+    refreshInProgress = false;
   }
 }
 
@@ -690,28 +695,16 @@ function formatDashboardDateTime(date) {
   }).format(date);
 }
 
-function calculateNextAiReview(lastDate) {
-  if (!(lastDate instanceof Date) || isNaN(lastDate)) return null;
-  const now = new Date();
-  let next = new Date(lastDate.getTime());
-  const intervalMs = AI_REVIEW_INTERVAL_HOURS * 60 * 60 * 1000;
-  while (next <= now) {
-    next = new Date(next.getTime() + intervalMs);
-  }
-  return next;
-}
-
 function renderReviewStatus() {
   const lastAiReviewEl = document.getElementById("lastAiReview");
   const nextAiReviewEl = document.getElementById("nextAiReview");
 
   if (lastAiReviewEl) {
-    lastAiReviewEl.textContent = dashboardStatus.lastUpdate || formatDashboardDateTime(new Date(LAST_AI_REVIEW_AT));
+    lastAiReviewEl.textContent = dashboardStatus.lastUpdate || "--";
   }
 
   if (nextAiReviewEl) {
-    const fallbackNextReview = calculateNextAiReview(new Date(LAST_AI_REVIEW_AT));
-    nextAiReviewEl.textContent = dashboardStatus.nextUpdate || formatDashboardDateTime(fallbackNextReview);
+    nextAiReviewEl.textContent = dashboardStatus.nextUpdate || "--";
   }
 }
 
@@ -748,7 +741,10 @@ function setupReviewToggle() {
 }
 
 function renderReviewTabs() {
-  const pendingItems = getPendingProposals();
+  const pendingItems = [
+    ...groupPendingProposalsByTicket(getPendingProposals()),
+    ...groupPendingManualChangesByTicket(getPendingManualChanges())
+  ].sort((a, b) => b.sortDate - a.sortDate);
   const pendingInfo = renderPendingChanges(pendingItems);
   renderRecentChanges();
 
@@ -771,6 +767,10 @@ function renderReviewTabs() {
 
 function getPendingProposals() {
   return proposalsData.filter(row => normalizeText(getRowValue(row, ["Estado Propuesta", "Estado"])) === "pendiente_aprobacion");
+}
+
+function getPendingManualChanges() {
+  return manualChangesData.filter(row => normalizeText(getRowValue(row, ["Estado"])) === "pendiente_aprobacion_dash");
 }
 
 function renderRecentChanges() {
@@ -998,28 +998,28 @@ function normalizeDisplayField(field) {
   if (!text) return "";
   const normalized = normalizeHeader(text);
   const aliases = {
-    "estado_redmine": "Estado Redmine",
-    "estado_operativo": "Estado Operativo",
-    "version_prevista": "Versión Prevista",
-    "ultima_novedad": "Última Novedad",
+    "estadoredmine": "Estado Redmine",
+    "estadooperativo": "Estado Operativo",
+    "versionprevista": "Versión Prevista",
+    "ultimanovedad": "Última Novedad",
     "stakeholder": "Stakeholder",
-    "asignado_a": "Asignado A",
-    "prioridad_redmine": "Prioridad Redmine",
-    "tipo_redmine": "Tipo Redmine",
+    "asignadoa": "Asignado A",
+    "prioridadredmine": "Prioridad Redmine",
+    "tiporedmine": "Tipo Redmine",
     "plataforma": "Plataforma",
-    "fecha_cierre": "Fecha Cierre",
-    "fecha_creacion": "Fecha Creación",
+    "fechacierre": "Fecha Cierre",
+    "fechacreacion": "Fecha Creación",
     "complexity": "Complexity",
     "impacto": "Impacto",
     "doc": "Doc",
-    "edicion_multiple": "Edición múltiple"
+    "edicionmultiple": "Edición múltiple"
   };
   return aliases[normalized] || text;
 }
 
 function isStatusField(field) {
   const normalized = normalizeHeader(field);
-  return normalized === "estado_redmine" || normalized === "estado_operativo";
+  return normalized === "estadoredmine" || normalized === "estadooperativo";
 }
 
 function extractFieldChangeText(fieldName, summary, value) {
@@ -1100,7 +1100,7 @@ function formatReviewDetail(detail, result) {
 
 function renderPendingChanges(items) {
   const panel = document.getElementById("pendingChangesPanel");
-  const allGroupedItems = groupPendingProposalsByTicket(items);
+  const allGroupedItems = items;
   const groupedItems = filterTrackingRowsByVisibleTickets(allGroupedItems);
 
   if (!panel) return { visible: groupedItems.length, total: allGroupedItems.length };
@@ -1205,6 +1205,55 @@ function groupPendingProposalsByTicket(rows) {
     });
 }
 
+function groupPendingManualChangesByTicket(rows) {
+  const groups = new Map();
+
+  rows.forEach((row, index) => {
+    const tk = getRowValue(row, ["#TK Redmine", "TK Redmine"]);
+    const date = getRowValue(row, ["Fecha Cambio", "Fecha"]);
+    const dateKey = normalizeDateMinute(date);
+    const key = `${dateKey || "sin_fecha"}__${tk || "sin_tk"}`;
+    const field = normalizeDisplayField(getRowValue(row, ["Campo Modificado", "Campo"]));
+    const oldValue = getRowValue(row, ["Valor Anterior"]);
+    const newValue = getRowValue(row, ["Valor Nuevo"]);
+
+    if (!groups.has(key)) {
+      groups.set(key, {
+        tk,
+        title: "Cambio manual pendiente",
+        date,
+        link: tk ? `${REDMINE_BASE_URL}${tk}` : "",
+        count: 0,
+        sortDate: parseDateLike(date) || index,
+        fieldSet: new Set(),
+        statusMap: new Map()
+      });
+    }
+
+    const group = groups.get(key);
+    group.count += 1;
+    if (field) group.fieldSet.add(field);
+    if (field && isStatusField(field)) {
+      group.statusMap.set(field, `${field}: ${oldValue || "vacío"} → ${newValue || "vacío"}`);
+    }
+  });
+
+  return [...groups.values()].map(group => {
+    const statusParts = [...group.statusMap.values()].filter(Boolean);
+    const otherFields = [...group.fieldSet].filter(field => !isStatusField(field));
+    const otherPart = otherFields.length ? `Campos por mostrar: ${formatFieldList(otherFields)}` : "";
+    return {
+      tk: group.tk,
+      title: group.title,
+      date: group.date,
+      link: group.link,
+      count: group.count,
+      sortDate: group.sortDate,
+      summary: [...statusParts, otherPart].filter(Boolean).join(" · ") || "Cambio manual pendiente de aprobación"
+    };
+  });
+}
+
 function getRowValue(row, aliases) {
   for (const alias of aliases) {
     if (Object.prototype.hasOwnProperty.call(row, alias) && String(row[alias] || "").trim() !== "") return String(row[alias]).trim();
@@ -1221,5 +1270,4 @@ document.addEventListener("click", () => {
 });
 
 initDashboard();
-
-renderReviewStatus();
+setInterval(initDashboard, AUTO_REFRESH_MS);
