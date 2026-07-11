@@ -991,3 +991,105 @@ td[data-col="nota"] {
 #reviewPanel .review-more-btn:hover{
   background:rgba(20,241,149,.14);
 }
+
+/* v36 - Identidad visual Fibrazo 2025 */
+:root{
+  --fzo-green:#0dffa1;
+  --fzo-green-soft:rgba(13,255,161,.12);
+  --fzo-green-border:rgba(13,255,161,.28);
+  --fzo-yellow:#ffe000;
+  --fzo-black:#000;
+  --fzo-surface:#080d0b;
+  --fzo-surface-raised:#0c1410;
+  --fzo-muted:#91a39b;
+}
+body{
+  font-family:"Montserrat",Arial,sans-serif;
+  background:
+    radial-gradient(circle at 82% 0,rgba(13,255,161,.07),transparent 28rem),
+    var(--fzo-black);
+  color:#f6faf8;
+}
+.dashboard{padding-top:26px}
+.header{
+  padding:22px 24px;
+  margin-bottom:18px;
+  border:1px solid rgba(13,255,161,.16);
+  border-radius:22px;
+  background:linear-gradient(120deg,rgba(13,255,161,.055),rgba(8,13,11,.96) 44%);
+  overflow:hidden;
+}
+.header:after{
+  content:"";
+  position:absolute;
+  width:190px;
+  height:190px;
+  right:-92px;
+  bottom:-125px;
+  border:1px dashed rgba(13,255,161,.3);
+  border-radius:50%;
+}
+.header-main{position:relative;z-index:1}
+.brand-lockup{display:flex;align-items:center;gap:13px;margin-bottom:15px}
+.brand-wordmark{
+  color:var(--fzo-green);
+  font-size:35px;
+  line-height:1;
+  font-weight:700;
+  letter-spacing:-2px;
+}
+.brand-divider{width:1px;height:25px;background:rgba(255,255,255,.22)}
+.brand-area{font-size:11px;font-weight:500;letter-spacing:.24em;color:#fff}
+.badge{
+  color:#d9e7e1;
+  background:transparent;
+  border:0;
+  border-left:3px solid var(--fzo-green);
+  border-radius:0;
+  padding:2px 0 2px 10px;
+  margin-bottom:9px;
+  font-size:12px;
+  font-weight:600;
+  letter-spacing:.08em;
+}
+.header-main p{font-size:12px;font-weight:300;color:var(--fzo-muted)}
+.compact-update-card{
+  background:rgba(0,0,0,.42);
+  border-color:var(--fzo-green-border);
+  box-shadow:none;
+}
+.compact-update-card strong{color:var(--fzo-green);font-family:"Montserrat",sans-serif}
+.filters,.panel,.kpi-card{
+  background:linear-gradient(180deg,var(--fzo-surface-raised),var(--fzo-surface));
+  border-color:rgba(13,255,161,.13);
+  box-shadow:0 14px 40px rgba(0,0,0,.2);
+}
+.filters{border-radius:16px}
+label,.scroll-hint,.panel-header span{color:var(--fzo-muted);font-weight:400}
+input,.multi-select-button,.columns-menu,.multi-select-menu{
+  background:#070c0a;
+  border-color:#1c2d26;
+  font-family:"Montserrat",sans-serif;
+}
+input:focus,.multi-select-button:hover,.multi-select.open .multi-select-button{border-color:var(--fzo-green)}
+button{font-family:"Montserrat",sans-serif;color:var(--fzo-green);border-color:var(--fzo-green-border);background:var(--fzo-green-soft)}
+.kpi-card{position:relative;overflow:hidden}
+.kpi-card:before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--fzo-green)}
+.kpi-card:nth-child(3):before{background:var(--fzo-yellow)}
+.kpi-card span{color:var(--fzo-muted);font-weight:400}
+.kpi-card strong{font-weight:600;letter-spacing:-.04em}
+.panel-header h2,#reviewPanel .review-toggle strong{font-weight:500;letter-spacing:-.02em}
+.bar-fill{background:linear-gradient(90deg,#08ca7d,var(--fzo-green))}
+.bar-track{background:#102019}
+th{color:var(--fzo-green);background:#09120e;font-weight:500}
+th:hover{background:#102019}
+td{color:#dbe5e1;font-weight:300}
+.ticket-link{color:var(--fzo-green)}
+.table-wrapper::-webkit-scrollbar-thumb,.multi-options-wrap::-webkit-scrollbar-thumb,.columns-menu::-webkit-scrollbar-thumb{background:var(--fzo-green)}
+.tag.resolved,.tag.resuelto{color:var(--fzo-green)}
+.tag.high,.tag.urgent,.tag.immediate,.manual-pill{color:var(--fzo-yellow)}
+@media(max-width:700px){
+  .header{padding:18px}
+  .brand-wordmark{font-size:30px}
+  .brand-area{letter-spacing:.16em}
+}
