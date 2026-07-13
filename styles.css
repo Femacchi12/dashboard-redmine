@@ -1175,3 +1175,21 @@ body{font-size:13px}
   background:rgba(174,187,181,.08);
   border-color:rgba(174,187,181,.24);
 }
+
+/* v38 - Mantener visible #TK Redmine durante el desplazamiento horizontal */
+.table-wrapper th[data-col="tkPadre"],
+.table-wrapper td[data-col="tkPadre"]{
+  position:sticky;
+  left:0;
+  z-index:4;
+  background:#080f0c;
+  border-right:1px solid rgba(13,255,161,.26);
+  box-shadow:8px 0 14px rgba(0,0,0,.32);
+}
+.table-wrapper th[data-col="tkPadre"]{
+  z-index:7;
+  background:#09120e;
+}
+.table-wrapper tbody tr:hover td[data-col="tkPadre"]{
+  background:#102019;
+}
