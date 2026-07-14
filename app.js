@@ -53,6 +53,9 @@ const columnsConfig = [
   { field: "prioridad", label: "Prioridad Redmine", visible:true },
   { field: "complejidad", label: "Complexity", visible:false },
   { field: "versionPrevista", label: "Versión Prevista", visible:false },
+  { field: "sprint", label: "Sprint", visible:true },
+  { field: "origenSprint", label: "Origen en Sprint", visible:true },
+  { field: "situacionEntrega", label: "Situación de Entrega", visible:true },
   { field: "tipoRedmine", label: "Tipo Redmine", visible:false },
   { field: "fechaCierre", label: "Fecha Cierre", visible:false },
   { field: "impacto", label: "Impacto", visible:false },
@@ -66,7 +69,10 @@ const filters = {
   status: { element: document.getElementById("statusFilter"), field: "estadoOperativo", placeholder: "Todos", selected: [] ,visible:true},
   area: { element: document.getElementById("areaFilter"), field: "areaFZO", placeholder: "Todas", selected: [] ,visible:true},
   author: { element: document.getElementById("authorFilter"), field: "autor", placeholder: "Todos", selected: [] ,visible:true},
-  responsible: { element: document.getElementById("responsibleFilter"), field: "responsable", placeholder: "Todos", selected: [] ,visible:true}
+  responsible: { element: document.getElementById("responsibleFilter"), field: "responsable", placeholder: "Todos", selected: [] ,visible:true},
+  sprint: { element: document.getElementById("sprintFilter"), field: "sprint", placeholder: "Todos", selected: [], visible:true },
+  sprintOrigin: { element: document.getElementById("sprintOriginFilter"), field: "origenSprint", placeholder: "Todos", selected: [], visible:true },
+  deliveryStatus: { element: document.getElementById("deliveryStatusFilter"), field: "situacionEntrega", placeholder: "Todas", selected: [], visible:true }
 };
 
 async function initDashboard() {
@@ -205,8 +211,9 @@ function normalizeTicket(ticket) {
 
   const getTk = aliases => String(get(aliases) || "").replace(/\.0$/, "").trim();
 
+  const tkPadre = getTk(["#TK Redmine", "#TK Padre Redmine", "TK Redmine", "TK Padre Redmine", "TK Padre"]);
   return {
-    tkPadre: getTk(["#TK Redmine", "#TK Padre Redmine", "TK Redmine", "TK Padre Redmine", "TK Padre"]),
+    tkPadre,
     fecha: get(["Fecha Creación", "Fecha Creacion", "Fecha de creación", "Fecha creación"]),
     fechaCierre: get(["Fecha Cierre", "fecha de cierre", "Fecha de cierre"]),
     edad: Number(get(["Envejecimiento (Días)", "Envejecimiento Dias", "Envejecimiento", "Edad"])) || 0,
@@ -224,6 +231,9 @@ function normalizeTicket(ticket) {
     asignadoA: get(["asignado a", "Asignado a", "Asignado A", "Asignado"]),
     autor: get(["Autor", "autor"]) || "Sin Autor",
     versionPrevista: get(["Versión Prevista", "versión prevista", "Version prevista"]),
+    sprint: get(["Sprint"]) || "Sin info",
+    origenSprint: get(["Origen en Sprint", "Tipo Sprint"]) || "Sin info",
+    situacionEntrega: get(["Situación de Entrega", "Situacion de Entrega", "Situación de Sprint"]) || "Sin info",
     stakeholder: get(["Stakeholder"]),
     areaFZO: get(["Área FZO", "Area FZO"]) || "Sin Área"
   };
@@ -353,7 +363,7 @@ function uniqueValues(data, field) {
 function applyFilters() {
   const search = normalizeText(searchInput.value);
   const filtered = allTickets.filter(ticket => {
-    const text = normalizeText(`${ticket.tkPadre} ${ticket.titulo} ${ticket.objetivo} ${ticket.nota} ${ticket.responsable} ${ticket.autor} ${ticket.asignadoA} ${ticket.stakeholder} ${ticket.impacto} ${ticket.estadoRedmine} ${ticket.estadoOperativo} ${ticket.areaFZO}`);
+    const text = normalizeText(`${ticket.tkPadre} ${ticket.titulo} ${ticket.objetivo} ${ticket.nota} ${ticket.responsable} ${ticket.autor} ${ticket.asignadoA} ${ticket.stakeholder} ${ticket.impacto} ${ticket.estadoRedmine} ${ticket.estadoOperativo} ${ticket.areaFZO} ${ticket.sprint} ${ticket.origenSprint} ${ticket.situacionEntrega}`);
     return text.includes(search)
       && matchesMultiFilter(ticket, filters.priority)
       && matchesMultiFilter(ticket, filters.redmineStatus)
@@ -361,6 +371,9 @@ function applyFilters() {
       && matchesMultiFilter(ticket, filters.area)
       && matchesMultiFilter(ticket, filters.author)
       && matchesMultiFilter(ticket, filters.responsible)
+      && matchesMultiFilter(ticket, filters.sprint)
+      && matchesMultiFilter(ticket, filters.sprintOrigin)
+      && matchesMultiFilter(ticket, filters.deliveryStatus)
       && matchesDateRange(ticket.fecha, createdFromFilter.value, createdToFilter.value)
       && matchesDateRange(ticket.fechaCierre, closedFromFilter.value, closedToFilter.value);
   });
@@ -489,7 +502,7 @@ function renderTable(data) {
 function renderCell(ticket, field) {
   const value = ticket[field];
   if (field === "tkPadre") return renderTicketLink(value);
-  if (["prioridad", "estadoRedmine", "estadoOperativo", "areaFZO"].includes(field)) return `<span class="tag ${getTagClass(value)}">${escapeHtml(value)}</span>`;
+  if (["prioridad", "estadoRedmine", "estadoOperativo", "areaFZO", "origenSprint", "situacionEntrega"].includes(field)) return `<span class="tag ${getTagClass(value)}">${escapeHtml(value)}</span>`;
   if (field === "responsable") return `<span class="manual-pill">${escapeHtml(value)}</span>`;
   return escapeHtml(value);
 }
