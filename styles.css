@@ -1192,6 +1192,11 @@ body{font-size:13px}
   background:rgba(255,224,0,.09);
   border-color:rgba(255,224,0,.32);
 }
+.tag.cancelado{
+  color:#ff7474;
+  background:rgba(255,80,80,.10);
+  border-color:rgba(255,80,80,.34);
+}
 .tag.sin-informacion{
   color:#8d9b95;
   background:rgba(141,155,149,.07);
