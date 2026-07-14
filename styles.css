@@ -1225,6 +1225,23 @@ body{font-size:13px}
   font-variant-numeric:tabular-nums;
 }
 
+/* v42 - Separación entre Estado Operativo y Responsable */
+.table-wrapper th[data-col="estadoOperativo"],
+.table-wrapper td[data-col="estadoOperativo"]{
+  min-width:210px;
+  width:210px;
+  padding-right:18px;
+}
+.table-wrapper th[data-col="responsable"],
+.table-wrapper td[data-col="responsable"]{
+  min-width:185px;
+  padding-left:18px;
+}
+.table-wrapper td[data-col="estadoOperativo"] .tag{
+  max-width:100%;
+  white-space:nowrap;
+}
+
 /* v38 - Mantener visible #TK Redmine durante el desplazamiento horizontal */
 .table-wrapper th[data-col="tkPadre"],
 .table-wrapper td[data-col="tkPadre"]{
