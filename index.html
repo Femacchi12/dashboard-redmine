@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=38" />
+  <link rel="stylesheet" href="styles.css?v=40" />
 </head>
 <body>
   <main class="dashboard">
@@ -41,6 +41,9 @@
       <div><label>Prioridad Redmine</label><div id="priorityFilter" class="multi-select" data-placeholder="Todas"></div></div>
       <div><label>Autor</label><div id="authorFilter" class="multi-select" data-placeholder="Todos"></div></div>
       <div><label>Responsable</label><div id="responsibleFilter" class="multi-select" data-placeholder="Todos"></div></div>
+      <div><label>Sprint</label><div id="sprintFilter" class="multi-select" data-placeholder="Todos"></div></div>
+      <div><label>Origen en Sprint</label><div id="sprintOriginFilter" class="multi-select" data-placeholder="Todos"></div></div>
+      <div><label>Situación de Entrega</label><div id="deliveryStatusFilter" class="multi-select" data-placeholder="Todas"></div></div>
     </section>
 
     <section class="date-actions-row">
@@ -82,7 +85,7 @@
       </div>
     </section>
 
-    <section class="panel">
+    <section class="panel detail-section">
       <div class="panel-header detail-header">
         <div><h2>Detalle De Tickets</h2><span id="tableCount">0 registros</span></div>
         <div class="table-toolbar">
@@ -97,14 +100,12 @@
       <div class="scroll-hint">Puedes usar los filtros superiores y escribir dentro de cada filtro para encontrar opciones específicas. Mueve la tabla con los botones, con el scroll inferior o con Shift + rueda del mouse.</div>
       <div id="tableWrapper" class="table-wrapper">
         <table>
-          <thead>
-            <tr id="tableHeadRow"></tr>
-          </thead>
+          <thead><tr id="tableHeadRow"></tr></thead>
           <tbody id="ticketsTable"></tbody>
         </table>
       </div>
     </section>
   </main>
-  <script src="app.js?v=38"></script>
+  <script src="app.js?v=40"></script>
 </body>
 </html>
