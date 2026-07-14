@@ -357,7 +357,17 @@ function closeOtherMultiSelects(currentElement) {
 }
 
 function uniqueValues(data, field) {
-  return [...new Set(data.map(item => item[field]).filter(Boolean))].sort((a, b) => a.localeCompare(b, "es"));
+  const values = [...new Set(data.map(item => item[field]).filter(Boolean))];
+  if (field === "sprint") {
+    return values.sort((a, b) => sprintDateKey(b) - sprintDateKey(a));
+  }
+  return values.sort((a, b) => a.localeCompare(b, "es"));
+}
+
+function sprintDateKey(value) {
+  const match = String(value || "").match(/(20\d{2})[\/-](\d{2})[\/-](\d{2})/);
+  if (!match) return -1;
+  return Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
 }
 
 function applyFilters() {
