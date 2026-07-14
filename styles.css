@@ -1208,6 +1208,23 @@ body{font-size:13px}
   max-width:150px;
 }
 
+/* v41 - Selector de Sprint legible y del periodo más reciente al más antiguo */
+#sprintFilter .multi-select-menu{
+  right:auto;
+  width:270px;
+  max-width:min(270px,calc(100vw - 32px));
+}
+#sprintFilter .multi-option{
+  align-items:center;
+  white-space:nowrap;
+}
+#sprintFilter .multi-option span{
+  display:block;
+  min-width:0;
+  white-space:nowrap;
+  font-variant-numeric:tabular-nums;
+}
+
 /* v38 - Mantener visible #TK Redmine durante el desplazamiento horizontal */
 .table-wrapper th[data-col="tkPadre"],
 .table-wrapper td[data-col="tkPadre"]{
