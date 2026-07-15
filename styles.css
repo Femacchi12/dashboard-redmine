@@ -1359,6 +1359,40 @@ body{font-size:13px}
 .column-filter-actions button{width:auto;padding:6px 11px;font-size:10.5px}
 .column-filter-empty{padding:12px 7px;color:#91a39b;font-size:11px}
 
+/* v45 - Espacio seguro para títulos y filtros de las primeras columnas */
+.table-wrapper th[data-col="tkPadre"],
+.table-wrapper td[data-col="tkPadre"]{
+  min-width:145px;
+  width:145px;
+}
+.table-wrapper th[data-col="edad"],
+.table-wrapper td[data-col="edad"]{
+  min-width:215px;
+  width:215px;
+}
+.table-wrapper th[data-col="estadoRedmine"],
+.table-wrapper td[data-col="estadoRedmine"]{
+  min-width:185px;
+  width:185px;
+}
+.table-wrapper th[data-col="areaFZO"],
+.table-wrapper td[data-col="areaFZO"]{
+  min-width:150px;
+  width:150px;
+}
+.table-wrapper th[data-col="autor"],
+.table-wrapper td[data-col="autor"]{
+  min-width:210px;
+  width:210px;
+}
+.table-wrapper th .table-head-content{
+  min-width:0;
+}
+.table-wrapper th .table-sort-button{
+  flex:1 1 auto;
+  overflow:visible;
+}
+
 /* v38 - Mantener visible #TK Redmine durante el desplazamiento horizontal */
 .table-wrapper th[data-col="tkPadre"],
 .table-wrapper td[data-col="tkPadre"]{
