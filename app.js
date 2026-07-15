@@ -359,7 +359,13 @@ function closeOtherMultiSelects(currentElement) {
 }
 
 function uniqueValues(data, field) {
-  const values = [...new Set(data.map(item => item[field]).filter(Boolean))];
+  // Todos los filtros trabajan con texto. Esto evita que columnas numéricas,
+  // como Envejecimiento, fallen al ordenar o comparar sus opciones.
+  const values = [...new Set(
+    data
+      .map(item => String(item[field] ?? "").trim())
+      .filter(Boolean)
+  )];
   if (field === "sprint") {
     return values.sort((a, b) => sprintDateKey(b) - sprintDateKey(a));
   }
