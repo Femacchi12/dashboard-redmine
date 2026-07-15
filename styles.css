@@ -1393,6 +1393,58 @@ body{font-size:13px}
   overflow:visible;
 }
 
+/* v46 - Encabezados compactos sin espacios artificiales */
+.table-wrapper table{
+  width:max-content;
+  min-width:100%;
+}
+.table-wrapper th,
+.table-wrapper td{
+  padding-left:9px;
+  padding-right:9px;
+}
+.table-wrapper th .table-head-content{
+  justify-content:flex-start;
+  gap:4px;
+}
+.table-wrapper th .table-sort-button{
+  flex:0 0 auto;
+}
+.table-wrapper .column-filter-button{
+  flex:0 0 18px;
+  width:18px;
+  min-width:18px;
+  height:18px;
+  padding:0;
+  border-radius:6px;
+  font-size:8px;
+}
+.table-wrapper th[data-col="tkPadre"],
+.table-wrapper td[data-col="tkPadre"]{
+  width:auto;
+  min-width:112px;
+}
+.table-wrapper th[data-col="edad"],
+.table-wrapper td[data-col="edad"]{
+  width:auto;
+  min-width:175px;
+}
+.table-wrapper th[data-col="estadoRedmine"],
+.table-wrapper td[data-col="estadoRedmine"]{
+  width:auto;
+  min-width:145px;
+}
+.table-wrapper th[data-col="areaFZO"],
+.table-wrapper td[data-col="areaFZO"]{
+  width:auto;
+  min-width:112px;
+}
+.table-wrapper th[data-col="autor"],
+.table-wrapper td[data-col="autor"]{
+  width:auto;
+  min-width:135px;
+}
+
 /* v38 - Mantener visible #TK Redmine durante el desplazamiento horizontal */
 .table-wrapper th[data-col="tkPadre"],
 .table-wrapper td[data-col="tkPadre"]{
