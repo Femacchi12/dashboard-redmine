@@ -13,6 +13,8 @@ let allTickets = [];
 let currentFilteredTickets = [];
 let sortState = { field: "edad", direction: "desc" ,visible:true};
 let visibleColumns = {};
+let columnFilters = {};
+let activeColumnFilterMenu = null;
 let dashboardStatus = { lastUpdate: "", nextUpdate: "", pendingProposals: "", lastResult: "" };
 let proposalsData = [];
 let logData = [];
@@ -384,6 +386,7 @@ function applyFilters() {
       && matchesMultiFilter(ticket, filters.sprint)
       && matchesMultiFilter(ticket, filters.sprintOrigin)
       && matchesMultiFilter(ticket, filters.deliveryStatus)
+      && matchesColumnFilters(ticket)
       && matchesDateRange(ticket.fecha, createdFromFilter.value, createdToFilter.value)
       && matchesDateRange(ticket.fechaCierre, closedFromFilter.value, closedToFilter.value);
   });
@@ -395,6 +398,12 @@ function applyFilters() {
   renderPriorityChart(filtered);
   renderTable(filtered);
   renderReviewTabs();
+}
+
+function matchesColumnFilters(ticket) {
+  return Object.entries(columnFilters).every(([field, selected]) => {
+    return !selected.length || selected.includes(String(ticket[field] ?? ""));
+  });
 }
 
 function matchesMultiFilter(ticket, filter) {
@@ -420,6 +429,9 @@ function clearFilters() {
   Object.values(filters).forEach(filter => {
     filter.selected = [];
   });
+  columnFilters = {};
+  closeColumnFilterMenu();
+  updateColumnFilterButtons();
   Object.values(filters).forEach(filter => {
     buildMultiSelect(filter, filter.values || uniqueValues(allTickets, filter.field));
   });
@@ -483,14 +495,145 @@ function renderBarChart(elementId, counts) {
 }
 
 function renderTableHeaders() {
-  tableHeadRow.innerHTML = columnsConfig.map(column => `<th data-sort="${column.field}" data-col="${column.field}">${escapeHtml(column.label)}</th>`).join("");
-  document.querySelectorAll("th[data-sort]").forEach(th => {
-    th.addEventListener("click", () => {
-      const field = th.dataset.sort;
+  tableHeadRow.innerHTML = "";
+  columnsConfig.forEach(column => {
+    const th = document.createElement("th");
+    th.dataset.col = column.field;
+
+    const content = document.createElement("div");
+    content.className = "table-head-content";
+
+    const sortButton = document.createElement("button");
+    sortButton.type = "button";
+    sortButton.className = "table-sort-button";
+    sortButton.dataset.sort = column.field;
+    sortButton.textContent = column.label;
+    sortButton.addEventListener("click", () => {
+      const field = column.field;
       if (sortState.field === field) sortState.direction = sortState.direction === "asc" ? "desc" : "asc";
       else sortState = { field, direction: "asc" };
       renderTable(currentFilteredTickets);
     });
+
+    const filterButton = document.createElement("button");
+    filterButton.type = "button";
+    filterButton.className = "column-filter-button";
+    filterButton.dataset.columnFilter = column.field;
+    filterButton.title = `Filtrar ${column.label}`;
+    filterButton.setAttribute("aria-label", `Filtrar ${column.label}`);
+    filterButton.textContent = "▾";
+    filterButton.addEventListener("click", event => {
+      event.stopPropagation();
+      openColumnFilterMenu(column, filterButton);
+    });
+
+    content.appendChild(sortButton);
+    content.appendChild(filterButton);
+    th.appendChild(content);
+    tableHeadRow.appendChild(th);
+  });
+  updateColumnFilterButtons();
+}
+
+function openColumnFilterMenu(column, anchor) {
+  if (activeColumnFilterMenu?.dataset.field === column.field) {
+    closeColumnFilterMenu();
+    return;
+  }
+  closeColumnFilterMenu();
+  closeOtherMultiSelects(null);
+  columnsControl.classList.remove("open");
+
+  const menu = document.createElement("div");
+  menu.className = "column-filter-menu";
+  menu.dataset.field = column.field;
+
+  const title = document.createElement("div");
+  title.className = "column-filter-title";
+  title.textContent = column.label;
+
+  const search = document.createElement("input");
+  search.type = "text";
+  search.className = "column-filter-search";
+  search.placeholder = "Buscar opción...";
+
+  const options = document.createElement("div");
+  options.className = "column-filter-options";
+  const values = uniqueValues(allTickets, column.field);
+
+  const actions = document.createElement("div");
+  actions.className = "column-filter-actions";
+  const clear = document.createElement("button");
+  clear.type = "button";
+  clear.textContent = "Limpiar";
+  clear.addEventListener("click", () => {
+    columnFilters[column.field] = [];
+    closeColumnFilterMenu();
+    updateColumnFilterButtons();
+    applyFilters();
+  });
+  actions.appendChild(clear);
+
+  function renderOptions(term = "") {
+    options.innerHTML = "";
+    const selected = columnFilters[column.field] || [];
+    const matches = values.filter(value => normalizeText(value).includes(normalizeText(term)));
+    if (!matches.length) {
+      options.innerHTML = '<div class="column-filter-empty">Sin opciones relacionadas</div>';
+      return;
+    }
+    matches.forEach(value => {
+      const label = document.createElement("label");
+      label.className = "column-filter-option";
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.checked = selected.includes(value);
+      checkbox.addEventListener("change", () => {
+        const current = columnFilters[column.field] || [];
+        columnFilters[column.field] = checkbox.checked
+          ? [...new Set([...current, value])]
+          : current.filter(item => item !== value);
+        updateColumnFilterButtons();
+        applyFilters();
+      });
+      const text = document.createElement("span");
+      text.textContent = value;
+      text.title = value;
+      label.appendChild(checkbox);
+      label.appendChild(text);
+      options.appendChild(label);
+    });
+  }
+
+  search.addEventListener("input", event => renderOptions(event.target.value));
+  menu.addEventListener("click", event => event.stopPropagation());
+  menu.appendChild(title);
+  menu.appendChild(search);
+  menu.appendChild(options);
+  menu.appendChild(actions);
+  document.body.appendChild(menu);
+  activeColumnFilterMenu = menu;
+
+  const rect = anchor.getBoundingClientRect();
+  const menuWidth = Math.min(420, window.innerWidth - 24);
+  const left = Math.max(12, Math.min(rect.left, window.innerWidth - menuWidth - 12));
+  menu.style.width = `${menuWidth}px`;
+  menu.style.left = `${left}px`;
+  menu.style.top = `${Math.max(12, Math.min(rect.bottom + 6, window.innerHeight - 390))}px`;
+  renderOptions();
+  setTimeout(() => search.focus(), 0);
+}
+
+function closeColumnFilterMenu() {
+  if (activeColumnFilterMenu) activeColumnFilterMenu.remove();
+  activeColumnFilterMenu = null;
+}
+
+function updateColumnFilterButtons() {
+  document.querySelectorAll(".column-filter-button").forEach(button => {
+    const count = (columnFilters[button.dataset.columnFilter] || []).length;
+    button.classList.toggle("active", count > 0);
+    button.textContent = count ? String(count) : "▾";
   });
 }
 
@@ -544,9 +687,9 @@ function sortTickets(data) {
 }
 
 function updateSortHeaders() {
-  document.querySelectorAll("th[data-sort]").forEach(th => {
-    th.classList.remove("sort-asc", "sort-desc");
-    if (th.dataset.sort === sortState.field) th.classList.add(sortState.direction === "asc" ? "sort-asc" : "sort-desc");
+  document.querySelectorAll(".table-sort-button[data-sort]").forEach(button => {
+    button.classList.remove("sort-asc", "sort-desc");
+    if (button.dataset.sort === sortState.field) button.classList.add(sortState.direction === "asc" ? "sort-asc" : "sort-desc");
   });
 }
 
@@ -1290,7 +1433,11 @@ function getRowValue(row, aliases) {
 document.addEventListener("click", () => {
   Object.values(filters).forEach(filter => filter.element.classList.remove("open"));
   columnsControl.classList.remove("open");
+  closeColumnFilterMenu();
 });
+
+window.addEventListener("resize", closeColumnFilterMenu);
+tableWrapper.addEventListener("scroll", closeColumnFilterMenu);
 
 initDashboard();
 setInterval(initDashboard, AUTO_REFRESH_MS);
