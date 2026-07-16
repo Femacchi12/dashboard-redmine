@@ -21,6 +21,8 @@ let logData = [];
 let manualChangesData = [];
 let showAllRecentChanges = false;
 const RECENT_CHANGES_INITIAL_LIMIT = 10;
+const TABLE_INITIAL_LIMIT = 10;
+let showAllTableRows = false;
 const AUTO_REFRESH_MS = 5 * 60 * 1000;
 let uiInitialized = false;
 let refreshInProgress = false;
@@ -38,6 +40,7 @@ const columnsControl = document.getElementById("columnsControl");
 const columnsBtn = document.getElementById("columnsBtn");
 const columnsMenu = document.getElementById("columnsMenu");
 const tableHeadRow = document.getElementById("tableHeadRow");
+const tableShowMoreBtn = document.getElementById("tableShowMoreBtn");
 
 const columnsConfig = [
   { field: "tkPadre", label: "#TK Redmine", visible:true, locked: true },
@@ -397,6 +400,7 @@ function applyFilters() {
       && matchesDateRange(ticket.fechaCierre, closedFromFilter.value, closedToFilter.value);
   });
 
+  showAllTableRows = false;
   currentFilteredTickets = filtered;
   updateKPIs(filtered);
   renderRedmineStatusChart(filtered);
@@ -646,13 +650,28 @@ function updateColumnFilterButtons() {
 function renderTable(data) {
   const tbody = document.getElementById("ticketsTable");
   tbody.innerHTML = "";
-  document.getElementById("tableCount").textContent = `${data.length} registros`;
 
-  sortTickets([...data]).forEach(ticket => {
+  const sortedTickets = sortTickets([...data]);
+  const visibleTickets = showAllTableRows ? sortedTickets : sortedTickets.slice(0, TABLE_INITIAL_LIMIT);
+  const hasMoreTickets = data.length > TABLE_INITIAL_LIMIT;
+
+  document.getElementById("tableCount").textContent = hasMoreTickets
+    ? `${visibleTickets.length} de ${data.length} registros`
+    : `${data.length} registros`;
+
+  visibleTickets.forEach(ticket => {
     const row = document.createElement("tr");
     row.innerHTML = columnsConfig.map(column => `<td data-col="${column.field}">${renderCell(ticket, column.field)}</td>`).join("");
     tbody.appendChild(row);
   });
+
+  if (tableShowMoreBtn) {
+    tableShowMoreBtn.hidden = !hasMoreTickets;
+    tableShowMoreBtn.textContent = showAllTableRows
+      ? "VER MENOS"
+      : `VER MÁS (${data.length - TABLE_INITIAL_LIMIT})`;
+    tableShowMoreBtn.setAttribute("aria-expanded", String(showAllTableRows));
+  }
 
   updateSortHeaders();
   applyColumnVisibility();
@@ -835,6 +854,15 @@ createdToFilter.addEventListener("change", applyFilters);
 closedFromFilter.addEventListener("change", applyFilters);
 closedToFilter.addEventListener("change", applyFilters);
 clearFiltersBtn.addEventListener("click", clearFilters);
+if (tableShowMoreBtn) {
+  tableShowMoreBtn.addEventListener("click", () => {
+    showAllTableRows = !showAllTableRows;
+    renderTable(currentFilteredTickets);
+    if (!showAllTableRows) {
+      document.querySelector(".detail-section")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  });
+}
 
 columnsBtn.addEventListener("click", event => {
   event.stopPropagation();
