@@ -523,6 +523,36 @@ button:hover,
   background: var(--fzo-green);
 }
 
+/* V53: tabla compacta con expansión bajo demanda. */
+.table-pagination-actions {
+  display: flex;
+  justify-content: center;
+  padding: 16px 0 2px;
+}
+
+.table-show-more {
+  width: auto;
+  min-width: 180px;
+  min-height: 42px;
+  padding: 10px 22px;
+  border-color: rgba(0, 239, 165, .55);
+  border-radius: 12px;
+  color: var(--fzo-green);
+  background: rgba(0, 239, 165, .08);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: .035em;
+}
+
+.table-show-more:hover {
+  color: #00130c;
+  background: var(--fzo-green);
+}
+
+.table-show-more[hidden] {
+  display: none;
+}
+
 /* V49: jerarquía tipográfica y composición definitiva de filtros. */
 .brand-wordmark {
   font-size: 40px;
