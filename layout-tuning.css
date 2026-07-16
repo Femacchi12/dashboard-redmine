@@ -271,6 +271,38 @@ body {
   }
 }
 
+/* V50: todos los filtros, incluidas las fechas, en dos filas equilibradas. */
+.filters.filters-extended {
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.filters-extended > .date-compact {
+  min-width: 0;
+}
+
+.filters-extended > .date-compact input {
+  width: 100%;
+  min-height: var(--dash-control-height);
+  padding: 9px 11px;
+  font-size: 13px;
+}
+
+@media (max-width: 1100px) {
+  .filters.filters-extended {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .filters-extended > div:has(> #sprintOriginFilter) {
+    grid-column: span 1;
+  }
+}
+
+@media (max-width: 760px) {
+  .filters.filters-extended {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* V49: jerarquía tipográfica y composición definitiva de filtros. */
 .brand-wordmark {
   font-size: 40px;
