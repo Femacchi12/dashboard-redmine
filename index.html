@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css?v=47" />
-  <link rel="stylesheet" href="layout-tuning.css?v=48" />
+  <link rel="stylesheet" href="layout-tuning.css?v=49" />
 </head>
 <body>
   <main class="dashboard">
@@ -34,21 +34,24 @@
       </div>
     </header>
 
-    <section class="filters filters-extended">
+    <section class="filter-utility-row">
       <div class="search-filter"><label>Buscar Por Palabra</label><input id="searchInput" type="text" placeholder="Buscar por TK, título, objetivo, última novedad, autor, responsable o estado..." /></div>
+      <div class="filter-actions"><label>Acciones</label><button id="clearFiltersBtn" type="button">Limpiar Filtros</button></div>
+    </section>
+
+    <section class="filters filters-extended">
       <div><label>Estado Redmine</label><div id="redmineStatusFilter" class="multi-select" data-placeholder="Todos"></div></div>
       <div><label>Estado Operativo</label><div id="statusFilter" class="multi-select" data-placeholder="Todos"></div></div>
       <div><label>Área FZO</label><div id="areaFilter" class="multi-select" data-placeholder="Todas"></div></div>
       <div><label>Prioridad Redmine</label><div id="priorityFilter" class="multi-select" data-placeholder="Todas"></div></div>
+      <div><label>Situación de Entrega</label><div id="deliveryStatusFilter" class="multi-select" data-placeholder="Todas"></div></div>
       <div><label>Autor</label><div id="authorFilter" class="multi-select" data-placeholder="Todos"></div></div>
       <div><label>Responsable</label><div id="responsibleFilter" class="multi-select" data-placeholder="Todos"></div></div>
       <div><label>Sprint</label><div id="sprintFilter" class="multi-select" data-placeholder="Todos"></div></div>
       <div><label>Origen en Sprint</label><div id="sprintOriginFilter" class="multi-select" data-placeholder="Todos"></div></div>
-      <div><label>Situación de Entrega</label><div id="deliveryStatusFilter" class="multi-select" data-placeholder="Todas"></div></div>
     </section>
 
     <section class="date-actions-row">
-      <div class="filter-actions"><label>Acciones</label><button id="clearFiltersBtn" type="button">Limpiar Filtros</button></div>
       <div class="date-compact"><label>Creación Desde</label><input id="createdFromFilter" type="date" /></div>
       <div class="date-compact"><label>Creación Hasta</label><input id="createdToFilter" type="date" /></div>
       <div class="date-compact"><label>Cierre Desde</label><input id="closedFromFilter" type="date" /></div>
