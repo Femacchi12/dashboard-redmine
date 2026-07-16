@@ -303,6 +303,45 @@ body {
   }
 }
 
+/* V51: opciones de todos los desplegables siempre en una sola línea. */
+.multi-options-wrap .multi-option {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 9px !important;
+  width: max-content;
+  min-width: 100%;
+  min-height: 36px;
+  padding: 8px 9px;
+  white-space: nowrap !important;
+}
+
+.multi-options-wrap .multi-option input[type="checkbox"] {
+  display: block;
+  flex: 0 0 15px;
+  width: 15px !important;
+  min-width: 15px !important;
+  height: 15px !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.multi-options-wrap .multi-option span {
+  display: inline-block !important;
+  flex: 0 0 auto;
+  width: auto !important;
+  margin: 0 !important;
+  white-space: nowrap !important;
+  line-height: 1.25;
+}
+
+.multi-options-wrap {
+  overflow-x: auto;
+}
+
 /* V49: jerarquía tipográfica y composición definitiva de filtros. */
 .brand-wordmark {
   font-size: 40px;
