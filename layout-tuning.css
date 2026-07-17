@@ -1349,3 +1349,41 @@ body{
     margin-top:6px;
   }
 }
+
+/* =========================================================
+   v65 - Separación segura en encabezados de personas/prioridad
+   ========================================================= */
+.table-wrap th[data-col="responsable"],
+.table-wrap td[data-col="responsable"],
+.table-wrapper th[data-col="responsable"],
+.table-wrapper td[data-col="responsable"]{
+  min-width:150px!important;
+  width:150px!important;
+  max-width:170px!important;
+}
+.table-wrap th[data-col="asignadoA"],
+.table-wrap td[data-col="asignadoA"],
+.table-wrapper th[data-col="asignadoA"],
+.table-wrapper td[data-col="asignadoA"]{
+  min-width:175px!important;
+  width:175px!important;
+  max-width:195px!important;
+}
+.table-wrap th[data-col="prioridad"],
+.table-wrap td[data-col="prioridad"],
+.table-wrapper th[data-col="prioridad"],
+.table-wrapper td[data-col="prioridad"]{
+  min-width:135px!important;
+  width:135px!important;
+  max-width:150px!important;
+}
+.table-wrap th[data-col="responsable"] .table-head-content,
+.table-wrap th[data-col="asignadoA"] .table-head-content,
+.table-wrap th[data-col="prioridad"] .table-head-content,
+.table-wrapper th[data-col="responsable"] .table-head-content,
+.table-wrapper th[data-col="asignadoA"] .table-head-content,
+.table-wrapper th[data-col="prioridad"] .table-head-content{
+  grid-template-columns:minmax(0,1fr) 22px;
+  gap:8px;
+  align-items:center;
+}
