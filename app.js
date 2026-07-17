@@ -9,6 +9,7 @@ const DEFAULT_AREA_FILTER = "Growth";
 let suppressDefaultAreaFilter = false;
 const COLUMN_STORAGE_KEY = "dashboardRedmineVisibleColumnsV29";
 const IMPACT_VISIBILITY_MIGRATION_KEY = "dashboardRedmineImpactVisibleV1";
+const FULL_VIEW_MIGRATION_KEY = "dashboardRedmineFullViewV1";
 
 let allTickets = [];
 let currentFilteredTickets = [];
@@ -58,17 +59,17 @@ const columnsConfig = [
   { field: "impacto", label: "Impacto", visible:true },
   { field: "estadoOperativo", label: "Estado Operativo", visible:true },
   { field: "responsable", label: "Responsable", visible:true },
-  { field: "fecha", label: "Fecha Creación", visible:false },
+  { field: "fecha", label: "Fecha Creación", visible:true },
   { field: "asignadoA", label: "Asignado A", visible:true },
   { field: "prioridad", label: "Prioridad Redmine", visible:true },
-  { field: "complejidad", label: "Complexity", visible:false },
-  { field: "versionPrevista", label: "Versión Prevista", visible:false },
+  { field: "complejidad", label: "Complexity", visible:true },
+  { field: "versionPrevista", label: "Versión Prevista", visible:true },
   { field: "sprint", label: "Sprint", visible:true },
   { field: "origenSprint", label: "Origen en Sprint", visible:true },
   { field: "situacionEntrega", label: "Situación de Entrega", visible:true },
-  { field: "tipoRedmine", label: "Tipo Redmine", visible:false },
-  { field: "fechaCierre", label: "Fecha Cierre", visible:false },
-  { field: "stakeholder", label: "Stakeholder", visible:false },
+  { field: "tipoRedmine", label: "Tipo Redmine", visible:true },
+  { field: "fechaCierre", label: "Fecha Cierre", visible:true },
+  { field: "stakeholder", label: "Stakeholder", visible:true },
   { field: "nota", label: "Última Novedad", visible:true }
 ];
 
@@ -117,6 +118,7 @@ async function initDashboard() {
 
     visibleColumns = loadVisibleColumns();
     ensureImpactColumnVisible();
+    ensureFullColumnView();
     buildAllMultiSelects();
     renderTableHeaders();
     setupColumnSelector();
@@ -849,6 +851,15 @@ function ensureImpactColumnVisible() {
   visibleColumns.impacto = true;
   saveVisibleColumns();
   localStorage.setItem(IMPACT_VISIBILITY_MIGRATION_KEY, "1");
+}
+
+function ensureFullColumnView() {
+  if (localStorage.getItem(FULL_VIEW_MIGRATION_KEY) === "1") return;
+  columnsConfig.forEach(column => {
+    visibleColumns[column.field] = true;
+  });
+  saveVisibleColumns();
+  localStorage.setItem(FULL_VIEW_MIGRATION_KEY, "1");
 }
 
 function applyColumnVisibility() {
