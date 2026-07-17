@@ -25,6 +25,7 @@ const TABLE_INITIAL_LIMIT = 10;
 let showAllTableRows = false;
 const AUTO_REFRESH_MS = 5 * 60 * 1000;
 let uiInitialized = false;
+let detailTabsInitialized = false;
 let refreshInProgress = false;
 
 const searchInput = document.getElementById("searchInput");
@@ -41,6 +42,8 @@ const columnsBtn = document.getElementById("columnsBtn");
 const columnsMenu = document.getElementById("columnsMenu");
 const tableHeadRow = document.getElementById("tableHeadRow");
 const tableShowMoreBtn = document.getElementById("tableShowMoreBtn");
+const tableSearchInput = document.getElementById("tableSearchInput");
+const detailViewTabs = document.getElementById("detailViewTabs");
 
 const columnsConfig = [
   { field: "tkPadre", label: "#TK Redmine", visible:true, locked: true },
@@ -67,6 +70,14 @@ const columnsConfig = [
   { field: "stakeholder", label: "Stakeholder", visible:false },
   { field: "nota", label: "Última Novedad", visible:true }
 ];
+
+const detailColumnViews = {
+  summary: ["tkPadre","edad","estadoRedmine","areaFZO","autor","titulo","estadoOperativo","responsable","asignadoA","sprint","situacionEntrega"],
+  redmine: ["tkPadre","estadoRedmine","prioridad","tipoRedmine","asignadoA","versionPrevista","fecha","fechaCierre","titulo","nota"],
+  operational: ["tkPadre","estadoOperativo","areaFZO","responsable","plataforma","impacto","stakeholder","objetivo","nota"],
+  sprint: ["tkPadre","estadoRedmine","sprint","origenSprint","situacionEntrega","versionPrevista","asignadoA","fechaCierre"],
+  all: columnsConfig.map(column => column.field)
+};
 
 const filters = {
   priority: { element: document.getElementById("priorityFilter"), field: "prioridad", placeholder: "Todas", selected: [] ,visible:true},
@@ -107,6 +118,10 @@ async function initDashboard() {
     buildAllMultiSelects();
     renderTableHeaders();
     setupColumnSelector();
+    if (!detailTabsInitialized) {
+      setupDetailViewTabs();
+      detailTabsInitialized = true;
+    }
     applyFilters();
     renderReviewStatus();
     renderReviewTabs();
@@ -432,6 +447,7 @@ function matchesDateRange(value, from, to) {
 function clearFilters() {
   suppressDefaultAreaFilter = true;
   searchInput.value = "";
+  if (tableSearchInput) tableSearchInput.value = "";
   createdFromFilter.value = "";
   createdToFilter.value = "";
   closedFromFilter.value = "";
@@ -656,7 +672,7 @@ function renderTable(data) {
   const hasMoreTickets = data.length > TABLE_INITIAL_LIMIT;
 
   document.getElementById("tableCount").textContent = hasMoreTickets
-    ? `${visibleTickets.length} de ${data.length} registros`
+    ? `${data.length} registros · mostrando ${visibleTickets.length}`
     : `${data.length} registros`;
 
   visibleTickets.forEach(ticket => {
@@ -715,6 +731,27 @@ function updateSortHeaders() {
   document.querySelectorAll(".table-sort-button[data-sort]").forEach(button => {
     button.classList.remove("sort-asc", "sort-desc");
     if (button.dataset.sort === sortState.field) button.classList.add(sortState.direction === "asc" ? "sort-asc" : "sort-desc");
+  });
+}
+
+function setupDetailViewTabs() {
+  if (!detailViewTabs) return;
+  detailViewTabs.querySelectorAll("[data-detail-view]").forEach(button => {
+    button.addEventListener("click", () => {
+      const viewName = button.dataset.detailView;
+      const fields = detailColumnViews[viewName] || detailColumnViews.summary;
+      const visibleSet = new Set(fields);
+      columnsConfig.forEach(column => {
+        visibleColumns[column.field] = column.locked || visibleSet.has(column.field);
+      });
+      saveVisibleColumns();
+      setupColumnSelector();
+      applyColumnVisibility();
+      detailViewTabs.querySelectorAll("[data-detail-view]").forEach(tab => {
+        tab.classList.toggle("active", tab === button);
+      });
+      tableWrapper.scrollTo({ left: 0, behavior: "smooth" });
+    });
   });
 }
 
@@ -848,7 +885,16 @@ function escapeHtml(value) {
     .replaceAll("'", "&#039;");
 }
 
-searchInput.addEventListener("input", applyFilters);
+searchInput.addEventListener("input", () => {
+  if (tableSearchInput && tableSearchInput.value !== searchInput.value) tableSearchInput.value = searchInput.value;
+  applyFilters();
+});
+if (tableSearchInput) {
+  tableSearchInput.addEventListener("input", () => {
+    searchInput.value = tableSearchInput.value;
+    applyFilters();
+  });
+}
 createdFromFilter.addEventListener("change", applyFilters);
 createdToFilter.addEventListener("change", applyFilters);
 closedFromFilter.addEventListener("change", applyFilters);
