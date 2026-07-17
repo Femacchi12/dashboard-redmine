@@ -1233,3 +1233,42 @@ body{
 .detail-tabs{
   justify-content:flex-start;
 }
+
+/* =========================================================
+   v59 - Tabla expandida con desplazamiento vertical propio
+   ========================================================= */
+.table-wrap.table-expanded,
+.table-wrapper.table-expanded{
+  max-height:min(68vh,720px);
+  overflow-x:auto;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  scrollbar-gutter:stable;
+}
+.table-wrap.table-expanded thead th,
+.table-wrapper.table-expanded thead th{
+  position:sticky;
+  top:0;
+  z-index:6;
+  box-shadow:0 1px 0 #20352c;
+}
+.table-wrap.table-expanded thead th[data-col="tkPadre"],
+.table-wrapper.table-expanded thead th[data-col="tkPadre"]{
+  left:0;
+  z-index:8;
+}
+.table-wrap.table-expanded::-webkit-scrollbar,
+.table-wrapper.table-expanded::-webkit-scrollbar{
+  width:11px;
+  height:12px;
+}
+.table-wrap.table-expanded::-webkit-scrollbar-track,
+.table-wrapper.table-expanded::-webkit-scrollbar-track{
+  background:#0d1a14;
+}
+.table-wrap.table-expanded::-webkit-scrollbar-thumb,
+.table-wrapper.table-expanded::-webkit-scrollbar-thumb{
+  border:3px solid #0d1a14;
+  border-radius:999px;
+  background:var(--fzo-green);
+}
