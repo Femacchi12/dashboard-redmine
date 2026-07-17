@@ -8,6 +8,7 @@ const REDMINE_BASE_URL = "https://redmine.fibrazo.com.co/issues/";
 const DEFAULT_AREA_FILTER = "Growth";
 let suppressDefaultAreaFilter = false;
 const COLUMN_STORAGE_KEY = "dashboardRedmineVisibleColumnsV29";
+const IMPACT_VISIBILITY_MIGRATION_KEY = "dashboardRedmineImpactVisibleV1";
 
 let allTickets = [];
 let currentFilteredTickets = [];
@@ -66,13 +67,13 @@ const columnsConfig = [
   { field: "situacionEntrega", label: "Situación de Entrega", visible:true },
   { field: "tipoRedmine", label: "Tipo Redmine", visible:false },
   { field: "fechaCierre", label: "Fecha Cierre", visible:false },
-  { field: "impacto", label: "Impacto", visible:false },
+  { field: "impacto", label: "Impacto", visible:true },
   { field: "stakeholder", label: "Stakeholder", visible:false },
   { field: "nota", label: "Última Novedad", visible:true }
 ];
 
 const detailColumnViews = {
-  summary: ["tkPadre","edad","estadoRedmine","areaFZO","autor","titulo","estadoOperativo","responsable","asignadoA","sprint","situacionEntrega"],
+  summary: ["tkPadre","edad","estadoRedmine","areaFZO","autor","titulo","estadoOperativo","responsable","asignadoA","impacto","sprint","situacionEntrega"],
   redmine: ["tkPadre","estadoRedmine","prioridad","tipoRedmine","asignadoA","versionPrevista","fecha","fechaCierre","titulo","nota"],
   operational: ["tkPadre","estadoOperativo","areaFZO","responsable","plataforma","impacto","stakeholder","objetivo","nota"],
   sprint: ["tkPadre","estadoRedmine","sprint","origenSprint","situacionEntrega","versionPrevista","asignadoA","fechaCierre"],
@@ -115,6 +116,7 @@ async function initDashboard() {
       .filter(t => t.titulo || t.tkPadre || t.autor || t.responsable || t.estadoRedmine);
 
     visibleColumns = loadVisibleColumns();
+    ensureImpactColumnVisible();
     buildAllMultiSelects();
     renderTableHeaders();
     setupColumnSelector();
@@ -840,6 +842,13 @@ function loadVisibleColumns() {
 
 function saveVisibleColumns() {
   localStorage.setItem(COLUMN_STORAGE_KEY, JSON.stringify(visibleColumns));
+}
+
+function ensureImpactColumnVisible() {
+  if (localStorage.getItem(IMPACT_VISIBILITY_MIGRATION_KEY) === "1") return;
+  visibleColumns.impacto = true;
+  saveVisibleColumns();
+  localStorage.setItem(IMPACT_VISIBILITY_MIGRATION_KEY, "1");
 }
 
 function applyColumnVisibility() {
