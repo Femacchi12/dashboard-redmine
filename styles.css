@@ -1850,3 +1850,49 @@ input,.multi-select-button,.sprint-filters select{background:#08120d}
   margin-bottom:0;
   transform:rotate(225deg);
 }
+
+
+/* =========================================================
+   v51 - Lienzo negro confortable como Impacto Social
+   ========================================================= */
+html,body{
+  background:#000000 !important;
+}
+.dashboard{background:transparent}
+.header{
+  background:#010705;
+}
+.filters,
+.date-actions-row,
+.panel,
+.review-panel{
+  background:#030806;
+}
+.kpi-card{
+  background:linear-gradient(135deg,#022018 0%,#03110c 55%,#030806 100%);
+}
+.charts-three .panel,
+.sprint-filters,
+.review-collapsible-body{
+  background:#020604;
+}
+input,
+.multi-select-button,
+.sprint-filters select{
+  background:#07100c;
+}
+.multi-select-menu,
+.columns-menu,
+.column-filter-menu{
+  background:#020604;
+}
+.table-wrapper{
+  background:#010403;
+}
+.table-wrapper th[data-col="tkPadre"],
+.table-wrapper td[data-col="tkPadre"]{
+  background:#030a07;
+}
+.table-wrapper th[data-col="tkPadre"]{
+  background:#07110c;
+}
