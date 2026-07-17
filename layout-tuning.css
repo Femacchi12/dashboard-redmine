@@ -1272,3 +1272,21 @@ body{
   border-radius:999px;
   background:var(--fzo-green);
 }
+
+/* =========================================================
+   v63 - Alineación de Estado Operativo
+   ========================================================= */
+.table-wrap tbody td[data-col="estadoOperativo"],
+.table-wrapper tbody td[data-col="estadoOperativo"]{
+  vertical-align:middle!important;
+}
+.table-wrap td[data-col="estadoOperativo"] .tag,
+.table-wrapper td[data-col="estadoOperativo"] .tag{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:24px;
+  margin:auto 0;
+  line-height:1.15;
+  white-space:nowrap;
+}
