@@ -1290,3 +1290,24 @@ body{
   line-height:1.15;
   white-space:nowrap;
 }
+
+/* =========================================================
+   v64 - Ancho seguro para Estado Operativo
+   ========================================================= */
+.table-wrap th[data-col="estadoOperativo"],
+.table-wrap td[data-col="estadoOperativo"],
+.table-wrapper th[data-col="estadoOperativo"],
+.table-wrapper td[data-col="estadoOperativo"]{
+  min-width:180px!important;
+  width:180px!important;
+  max-width:200px!important;
+  padding-left:12px!important;
+  padding-right:12px!important;
+}
+.table-wrap td[data-col="estadoOperativo"] .tag,
+.table-wrapper td[data-col="estadoOperativo"] .tag{
+  max-width:100%;
+  box-sizing:border-box;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
