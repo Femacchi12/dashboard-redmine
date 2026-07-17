@@ -1211,3 +1211,18 @@ body{
 .table-wrapper tbody tr:hover td[data-col="tkPadre"]{
   background:#0d1713!important;
 }
+
+/* =========================================================
+   v57 - Pestañas de detalle centradas
+   ========================================================= */
+.detail-tabs{
+  justify-content:center;
+  padding-top:10px;
+  padding-bottom:17px;
+}
+@media(max-width:760px){
+  .detail-tabs{
+    justify-content:flex-start;
+    padding-top:8px;
+  }
+}
