@@ -1167,3 +1167,47 @@ body{
   .table-actions{margin-top:14px;overflow-x:auto}
   .table-actions .small-btn{min-width:118px}
 }
+
+/* =========================================================
+   v56 - Corrección efectiva de filtros y columna TK
+   ========================================================= */
+.table-wrap .column-filter-button,
+.table-wrapper .column-filter-button{
+  flex:0 0 22px!important;
+  width:22px!important;
+  min-width:22px!important;
+  height:22px!important;
+  min-height:22px!important;
+  padding:0!important;
+  border:1px solid rgba(0,242,154,.38)!important;
+  border-radius:7px!important;
+  background:rgba(0,242,154,.05)!important;
+  color:var(--fzo-green)!important;
+  font-size:7px!important;
+  line-height:20px!important;
+  box-shadow:none!important;
+}
+.table-wrap .column-filter-button:hover,
+.table-wrapper .column-filter-button:hover{
+  border-color:rgba(0,242,154,.62)!important;
+  background:rgba(0,242,154,.10)!important;
+}
+.table-wrap th[data-col="tkPadre"],
+.table-wrap td[data-col="tkPadre"],
+.table-wrapper th[data-col="tkPadre"],
+.table-wrapper td[data-col="tkPadre"]{
+  border-right:0!important;
+  box-shadow:none!important;
+}
+.table-wrap th[data-col="tkPadre"],
+.table-wrapper th[data-col="tkPadre"]{
+  background:#0d1512!important;
+}
+.table-wrap td[data-col="tkPadre"],
+.table-wrapper td[data-col="tkPadre"]{
+  background:#080d0b!important;
+}
+.table-wrap tbody tr:hover td[data-col="tkPadre"],
+.table-wrapper tbody tr:hover td[data-col="tkPadre"]{
+  background:#0d1713!important;
+}
