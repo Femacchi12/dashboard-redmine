@@ -768,3 +768,188 @@ button:hover,
     grid-column: span 1;
   }
 }
+/* V54: geometría y tipografía idénticas a Impacto Social. */
+:root{
+  --dash-font-base:14px;
+  --dash-font-small:12px;
+  --dash-control-height:42px;
+}
+body{
+  font:14px Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
+  line-height:1.4;
+}
+.dashboard{
+  width:min(1800px,94%);
+  padding:10px 0 34px;
+}
+.header{
+  min-height:130px;
+  margin:0 0 14px;
+  padding:22px 22px 20px;
+  border:1px solid rgba(0,169,106,.40);
+  border-radius:20px;
+  background:linear-gradient(110deg,#020a07 0%,#06100c 62%,#07150f 100%);
+  box-shadow:none;
+}
+.header:after{
+  width:180px;
+  height:180px;
+  right:-90px;
+  bottom:-130px;
+  border-color:rgba(0,186,117,.24);
+}
+.brand-lockup{gap:13px;height:30px}
+.brand-wordmark{
+  font-size:29px;
+  font-weight:800;
+  line-height:1;
+  letter-spacing:-.06em;
+}
+.brand-divider{height:22px}
+.brand-area{
+  font-size:10px;
+  font-weight:800;
+  letter-spacing:.24em;
+}
+.badge{
+  min-height:0;
+  margin:16px 0 0;
+  padding-left:11px;
+  border-left-width:2px;
+  font-size:13px;
+  line-height:1.25;
+  letter-spacing:.01em;
+}
+.header-main p{
+  max-width:630px;
+  margin:17px 0 0;
+  font-size:10px;
+  line-height:1.4;
+  color:#5f8c7b;
+}
+.header-updates{
+  width:min(470px,43%);
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+.compact-update-card{
+  min-width:0;
+  min-height:59px;
+  padding:10px 16px;
+  border:1px solid rgba(0,169,106,.47);
+  border-radius:16px;
+  background:rgba(6,16,12,.66);
+}
+.compact-update-card span{font-size:10px;color:#7da795}
+.compact-update-card strong{margin-top:6px;font-size:12px}
+
+.filter-utility-row,
+.filters.filters-extended,
+.panel,
+.kpi-card,
+.review-panel,
+.review-collapsible-body,
+.sprint-filters{
+  border-radius:18px;
+}
+.filter-utility-row{
+  margin-bottom:14px;
+  padding:20px;
+}
+.filters.filters-extended{
+  margin:0 0 14px;
+  padding:20px;
+}
+.filters.filters-extended:before{font-size:9px}
+.filter-utility-row label,
+.filters label,
+.date-actions-row label,
+.sprint-filters label{
+  margin-bottom:7px;
+  font-size:10px;
+  line-height:1.2;
+  color:var(--fzo-muted);
+}
+.filter-utility-row input,
+.filters input,
+.filters select,
+.multi-select-button,
+.sprint-filters select{
+  min-height:42px;
+  height:42px;
+  padding:10px 12px;
+  border-radius:10px;
+  font-size:12px;
+}
+.filter-utility-row button{
+  min-height:42px;
+  border-radius:10px;
+  font-size:12px;
+}
+.multi-select-menu,
+.column-filter-menu,
+.columns-menu{
+  border-radius:12px;
+  font-size:12px;
+}
+.multi-filter-search,
+.column-filter-search{border-radius:10px;font-size:12px}
+
+.kpi-grid{gap:14px;margin-bottom:14px}
+.kpi-card{
+  min-height:125px;
+  padding:20px;
+}
+.kpi-card span{
+  font-size:10px;
+  line-height:1.25;
+  letter-spacing:.08em;
+}
+.kpi-card strong{
+  margin-top:12px;
+  font-size:32px;
+  line-height:1;
+}
+.content-grid{gap:14px;margin-bottom:14px}
+.panel{padding:20px}
+.charts-three .panel{min-height:0;padding:20px}
+.charts-three .panel-header h2,
+.panel-header h2,
+.panel-title,
+.table-card h2,
+.table-card h3{
+  font-size:17px;
+  line-height:1.25;
+}
+.charts-three .bar-label,
+.charts-three .bar-value,
+.bar-label,
+.bar-value{
+  font-size:12px;
+  line-height:1.25;
+}
+.table-wrapper{border-radius:18px}
+.table-wrapper th{font-size:11px}
+.table-wrapper td{font-size:12px}
+.table-wrapper .tag,
+.table-wrapper .pill,
+.table-wrapper .status-pill{font-size:10px}
+.table-show-more,
+#tableShowMoreBtn{border-radius:10px;font-size:12px}
+
+@media(max-width:850px){
+  .header{display:block;min-height:0}
+  .header-updates{width:100%;margin-top:20px}
+  .compact-update-card{text-align:left}
+}
+@media(max-width:560px){
+  .header{padding:18px;border-radius:18px}
+  .brand-wordmark{font-size:25px}
+  .header-updates{grid-template-columns:1fr}
+  .compact-update-card:nth-child(2){display:none}
+  .filter-utility-row,
+  .filters.filters-extended,
+  .panel,
+  .kpi-card{border-radius:16px}
+}
