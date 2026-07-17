@@ -55,6 +55,7 @@ const columnsConfig = [
   { field: "titulo", label: "Título", visible:true },
   { field: "objetivo", label: "Objetivo", visible:true },
   { field: "plataforma", label: "Plataforma", visible:true },
+  { field: "impacto", label: "Impacto", visible:true },
   { field: "estadoOperativo", label: "Estado Operativo", visible:true },
   { field: "responsable", label: "Responsable", visible:true },
   { field: "fecha", label: "Fecha Creación", visible:false },
@@ -67,7 +68,6 @@ const columnsConfig = [
   { field: "situacionEntrega", label: "Situación de Entrega", visible:true },
   { field: "tipoRedmine", label: "Tipo Redmine", visible:false },
   { field: "fechaCierre", label: "Fecha Cierre", visible:false },
-  { field: "impacto", label: "Impacto", visible:true },
   { field: "stakeholder", label: "Stakeholder", visible:false },
   { field: "nota", label: "Última Novedad", visible:true }
 ];
