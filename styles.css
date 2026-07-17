@@ -1896,3 +1896,166 @@ input,
 .table-wrapper th[data-col="tkPadre"]{
   background:#07110c;
 }
+/* =========================================================
+   v52 - Sistema visual unificado con Impacto Social
+   ========================================================= */
+:root{
+  --fzo-bg:#050807;
+  --fzo-bg-deep:#050807;
+  --fzo-surface:#0b110f;
+  --fzo-surface-2:#0f1714;
+  --fzo-surface-3:#101915;
+  --fzo-border:#1b3028;
+  --fzo-border-strong:#00c77d;
+  --fzo-green:#00f29a;
+  --fzo-green-bright:#00f29a;
+  --fzo-green-soft:rgba(0,242,154,.10);
+  --fzo-green-border:rgba(0,242,154,.40);
+  --fzo-text:#f4fff9;
+  --fzo-muted:#8fa9a0;
+  --fzo-muted-strong:#a9c0b7;
+  --fzo-yellow:#f5d547;
+}
+html{background:var(--fzo-bg)!important}
+body{
+  background:
+    radial-gradient(circle at 85% 0,rgba(11,33,25,.88) 0,transparent 26%),
+    var(--fzo-bg)!important;
+  color:var(--fzo-text);
+  font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
+}
+.dashboard{background:transparent}
+.header{
+  background:linear-gradient(145deg,#07110d,#030806);
+  border-color:rgba(0,242,154,.34);
+}
+.brand-wordmark{color:var(--fzo-green)}
+.brand-divider{background:rgba(244,255,249,.42)}
+.brand-area,.header .badge{color:#fff!important}
+.header .badge{border-left-color:var(--fzo-green)}
+.header-main p{color:#69b898}
+.compact-update-card{
+  border-color:rgba(0,242,154,.44);
+  background:#07110d;
+}
+.compact-update-card span{color:var(--fzo-muted)}
+.compact-update-card strong{color:var(--fzo-green)}
+
+.filters,
+.date-actions-row,
+.panel,
+.review-panel,
+.review-collapsible-body,
+.sprint-filters{
+  background:linear-gradient(145deg,#0d1412,#080d0b);
+  border-color:var(--fzo-border);
+}
+.filter-group label,
+.date-actions-row label,
+.panel-header span,
+.scroll-hint,
+.review-toggle small{color:var(--fzo-muted)}
+input,
+.multi-select-button,
+.sprint-filters select{
+  background:#101915;
+  border-color:#294137;
+  color:var(--fzo-text);
+}
+input::placeholder,
+.multi-filter-search::placeholder,
+.column-filter-search::placeholder{color:#728b82}
+input:focus,
+.multi-select.open .multi-select-button,
+.multi-select-button:hover{
+  border-color:var(--fzo-green);
+  background:#101915;
+  box-shadow:0 0 0 2px rgba(0,242,154,.10);
+}
+.multi-select-button:after{
+  border-right-color:#fff;
+  border-bottom-color:#fff;
+}
+.multi-select-menu,
+.columns-menu,
+.column-filter-menu{
+  background:#0b1511;
+  border-color:#294137;
+  box-shadow:0 22px 52px rgba(0,0,0,.58);
+}
+.multi-filter-search,
+.column-filter-search{
+  background:#101915;
+  border-color:#294137;
+  color:#fff;
+}
+.multi-option,
+.column-option,
+.column-filter-option{color:#f4fff9}
+.multi-option:hover,
+.column-option:hover,
+.column-filter-option:hover{background:#14211d}
+
+.kpi-card{
+  background:linear-gradient(145deg,#0d1412,#080d0b);
+  border-color:var(--fzo-border);
+}
+.kpi-card:first-child{border-color:rgba(0,242,154,.50)}
+.kpi-card span{color:var(--fzo-muted)}
+.kpi-card strong{color:var(--fzo-green)}
+.kpi-card:nth-child(3) strong{color:var(--fzo-yellow)}
+
+.charts-three .panel,
+.table-wrapper{
+  background:#080d0b;
+  border-color:var(--fzo-border);
+}
+.panel-header h2,
+#reviewPanel .review-toggle strong{color:var(--fzo-text)}
+.charts-three .bar-label,
+.charts-three .bar-value{color:#d9e7e1}
+.bar-track{background:#14211d}
+.bar-fill{background:linear-gradient(90deg,#00c77d,var(--fzo-green))}
+
+th{
+  color:var(--fzo-green);
+  background:#0d1512;
+  border-bottom-color:#20352c;
+}
+th:hover{background:#122019}
+td{
+  color:#e6f0eb;
+  border-bottom-color:#17251f;
+}
+.table-wrapper tbody tr:hover td{background:#102019}
+.table-wrapper th[data-col="tkPadre"],
+.table-wrapper td[data-col="tkPadre"]{background:#0b1511}
+.table-wrapper th[data-col="tkPadre"]{background:#0d1512}
+.table-wrapper tbody tr:hover td[data-col="tkPadre"]{background:#102019}
+.column-filter-button{
+  color:var(--fzo-green);
+  border-color:rgba(0,242,154,.38);
+  background:rgba(0,242,154,.07);
+}
+.column-filter-button.active,
+.review-tab.active,
+.detail-tab.active,
+#tableShowMoreBtn{
+  color:#002014;
+  border-color:var(--fzo-green);
+  background:var(--fzo-green);
+}
+.ticket-link{color:var(--fzo-green)}
+.filter-actions button,
+#clearFiltersBtn,
+.small-btn{
+  color:var(--fzo-green);
+  border-color:rgba(0,242,154,.44);
+  background:#08100d;
+}
+.filter-actions button:hover,
+#clearFiltersBtn:hover,
+.small-btn:hover{
+  color:#002014;
+  background:var(--fzo-green);
+}
