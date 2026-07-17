@@ -1741,3 +1741,70 @@ td{color:#dfe9e4;border-bottom-color:#142a20}
   .kpi-card{min-height:112px}
   .kpi-card strong{font-size:31px}
 }
+
+
+/* =========================================================
+   v49 - Encabezado compacto alineado con Impacto Social
+   ========================================================= */
+.header{
+  min-height:145px;
+  padding:25px 30px 23px;
+  border-radius:22px 22px 0 0;
+  background:linear-gradient(112deg,#00110a 0%,#02150d 62%,#06150f 100%);
+}
+.header-main{position:relative;z-index:2}
+.brand-lockup{gap:14px}
+.brand-wordmark{
+  color:#00ed9d;
+  font-size:30px;
+  line-height:1;
+  letter-spacing:-.055em;
+}
+.brand-divider{
+  width:1px;
+  height:28px;
+  background:rgba(232,244,238,.55);
+}
+.brand-area{
+  color:#ffffff;
+  font-size:10px;
+  font-weight:800;
+  letter-spacing:.20em;
+}
+.badge{
+  margin-top:16px;
+  margin-bottom:13px;
+  padding-left:12px;
+  min-height:22px;
+  display:flex;
+  align-items:center;
+  border-left:2px solid #00ed9d;
+  color:#ffffff;
+  font-size:15px;
+  font-weight:700;
+  line-height:1.2;
+}
+.header-main p{
+  color:#62ad8f;
+  font-size:11.5px;
+  line-height:1.4;
+}
+.header-updates{align-self:flex-start}
+.compact-update-card{
+  min-width:205px;
+  padding:13px 16px;
+  border-color:#00714c;
+  background:#03140d;
+}
+.compact-update-card span{color:#75a994;font-size:10.5px}
+.compact-update-card strong{color:#00ed9d;font-size:13px}
+
+@media(max-width:1000px){
+  .header{min-height:0;padding:23px 24px 22px}
+  .header-updates{margin-top:18px}
+}
+@media(max-width:700px){
+  .brand-wordmark{font-size:27px}
+  .brand-divider{height:25px}
+  .badge{font-size:14px}
+}
