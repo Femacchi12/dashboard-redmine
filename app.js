@@ -689,6 +689,12 @@ function renderTable(data) {
     tableShowMoreBtn.setAttribute("aria-expanded", String(showAllTableRows));
   }
 
+  if (tableWrapper) {
+    const expandedTable = showAllTableRows && hasMoreTickets;
+    tableWrapper.classList.toggle("table-expanded", expandedTable);
+    if (!expandedTable) tableWrapper.scrollTop = 0;
+  }
+
   updateSortHeaders();
   applyColumnVisibility();
 }
@@ -904,6 +910,7 @@ if (tableShowMoreBtn) {
   tableShowMoreBtn.addEventListener("click", () => {
     showAllTableRows = !showAllTableRows;
     renderTable(currentFilteredTickets);
+    tableWrapper.scrollTop = 0;
     if (!showAllTableRows) {
       document.querySelector(".detail-section")?.scrollIntoView({ behavior: "smooth", block: "start" });
     }
