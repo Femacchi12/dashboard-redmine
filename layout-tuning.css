@@ -953,3 +953,217 @@ body{
   .panel,
   .kpi-card{border-radius:16px}
 }
+/* V55: base detallada con el diseño de Impacto Social. */
+.detail-section.records{
+  padding:0;
+  overflow:hidden;
+  border:1px solid var(--fzo-border);
+  border-radius:18px;
+  background:linear-gradient(145deg,#0d1412,#080d0b);
+}
+.records-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:14px;
+  margin:0;
+  padding:20px 24px 14px;
+}
+.records-head > div:first-child{min-width:0}
+.detail-eyebrow{
+  display:block;
+  margin-bottom:4px;
+  color:var(--fzo-green);
+  font-size:9px;
+  font-weight:800;
+  letter-spacing:.14em;
+}
+.records-head h2{
+  margin:0;
+  color:var(--fzo-text);
+  font-size:17px;
+  line-height:1.25;
+}
+.records-head input{
+  width:300px;
+  min-height:46px;
+  margin:0;
+  padding:11px 14px;
+  border:1px solid #294137;
+  border-radius:12px;
+  background:#101915;
+  color:var(--fzo-text);
+  font-size:12px;
+}
+.records-head input:focus{border-color:var(--fzo-green)}
+.detail-tabs{
+  display:flex;
+  gap:7px;
+  padding:0 24px 16px;
+  overflow-x:auto;
+  border-bottom:1px solid #17251f;
+}
+.detail-tabs button{
+  width:auto;
+  min-width:0;
+  padding:9px 13px;
+  border:1px solid #244137;
+  border-radius:10px;
+  background:#0d1713;
+  color:var(--fzo-muted);
+  font:700 10px Inter,sans-serif;
+  white-space:nowrap;
+  cursor:pointer;
+}
+.detail-tabs button:hover{
+  color:var(--fzo-green);
+  background:#102019;
+}
+.detail-tabs button.active{
+  color:#002014;
+  border-color:var(--fzo-green);
+  background:var(--fzo-green);
+}
+.table-tools{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:16px;
+  padding:2px 24px 14px;
+}
+.table-tools p{
+  margin:0;
+  color:var(--fzo-muted);
+  font-size:10px;
+  line-height:1.45;
+}
+.table-tools p b{
+  display:block;
+  margin-bottom:4px;
+  color:var(--fzo-green);
+  font-size:12px;
+}
+.table-actions{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-shrink:0;
+}
+.table-actions .small-btn{
+  width:auto;
+  min-width:130px;
+  min-height:44px;
+  padding:9px 16px;
+  border:1px solid rgba(0,242,154,.47);
+  border-radius:12px;
+  background:rgba(0,242,154,.06);
+  color:var(--fzo-green);
+  font-size:12px;
+  font-weight:700;
+}
+.table-actions .small-btn:hover{
+  color:#002014;
+  background:var(--fzo-green);
+}
+.columns-control{position:relative}
+.table-wrap{
+  width:100%;
+  overflow:auto;
+  border:0;
+  border-top:1px solid #17251f;
+  border-radius:0;
+  background:#080d0b;
+}
+.table-wrap table{
+  min-width:max-content;
+  width:100%;
+  border-collapse:collapse;
+}
+.table-wrap th{
+  padding:12px 12px;
+  color:var(--fzo-green);
+  background:#0d1512;
+  border-bottom:0;
+  font-size:9px;
+  font-weight:800;
+  letter-spacing:.055em;
+  text-transform:uppercase;
+  white-space:normal;
+}
+.table-wrap td{
+  height:55px;
+  padding:11px 12px;
+  border-top:1px solid #17251f;
+  border-bottom:0;
+  background:#080d0b;
+  color:#b9cbc4;
+  font-size:12px;
+  line-height:1.3;
+  vertical-align:middle;
+}
+.table-wrap tbody tr:hover td{background:#0d1713}
+.table-wrap .ticket-link{
+  display:inline-block;
+  padding:6px 10px;
+  border-radius:10px;
+  background:var(--fzo-green);
+  color:#001b10;
+  font-weight:800;
+  text-decoration:none;
+}
+.table-wrap .ticket-link:hover{
+  filter:brightness(1.08);
+  transform:translateY(-1px);
+}
+.table-wrap .tag{
+  display:inline-block;
+  padding:4px 9px;
+  border-radius:12px;
+  font-size:10px;
+  line-height:1.2;
+}
+.table-wrap th[data-col="tkPadre"],
+.table-wrap td[data-col="tkPadre"]{
+  left:0;
+  z-index:3;
+  background:#0b1511;
+}
+.table-wrap th[data-col="tkPadre"]{z-index:5;background:#0d1512}
+.table-head-content{
+  grid-template-columns:minmax(0,1fr) 30px;
+  gap:8px;
+}
+.table-sort-button{
+  color:var(--fzo-green);
+  font-size:9px;
+  font-weight:800;
+  letter-spacing:.055em;
+  text-align:left;
+  text-transform:uppercase;
+}
+.column-filter-button{
+  width:30px!important;
+  min-width:30px!important;
+  height:30px!important;
+  border-radius:9px!important;
+  font-size:8px!important;
+}
+.records-more{
+  padding:16px 0 18px;
+  border-top:1px solid #17251f;
+  background:#080d0b;
+}
+.records-more .table-show-more{
+  min-width:160px;
+  min-height:42px;
+  border-radius:10px;
+  font-size:12px;
+}
+@media(max-width:760px){
+  .records-head{display:block;padding:18px 16px 14px}
+  .records-head input{width:100%;margin-top:14px}
+  .detail-tabs{padding:0 16px 14px}
+  .table-tools{display:block;padding:4px 16px 14px}
+  .table-actions{margin-top:14px;overflow-x:auto}
+  .table-actions .small-btn{min-width:118px}
+}
