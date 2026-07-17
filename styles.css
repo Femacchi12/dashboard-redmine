@@ -1808,3 +1808,45 @@ td{color:#dfe9e4;border-bottom-color:#142a20}
   .brand-divider{height:25px}
   .badge{font-size:14px}
 }
+
+
+/* =========================================================
+   v50 - Fondo negro, título blanco y chevrons de filtros
+   ========================================================= */
+html{background:#000302}
+body{
+  background:
+    radial-gradient(circle at 96% 3%,rgba(0,236,157,.045),transparent 24%),
+    linear-gradient(180deg,#071009 0,#020604 185px,#000302 100%);
+}
+.header{
+  background:linear-gradient(112deg,#000604 0%,#010a06 64%,#020c08 100%);
+}
+.header .badge{
+  color:#ffffff !important;
+  text-shadow:none;
+}
+.filters{background:#060c09}
+.date-actions-row,.panel{background:#050b08}
+input,.multi-select-button,.sprint-filters select{background:#08120d}
+.multi-select-menu,.columns-menu,.column-filter-menu{background:#030906}
+
+/* Chevrón blanco, compacto y uniforme como en la referencia */
+.multi-select-button:after{
+  content:"";
+  display:block;
+  flex:0 0 7px;
+  width:7px;
+  height:7px;
+  margin:0 3px 4px 8px;
+  border:0;
+  border-right:2px solid #ffffff;
+  border-bottom:2px solid #ffffff;
+  transform:rotate(45deg);
+  opacity:.95;
+}
+.multi-select.open .multi-select-button:after{
+  margin-top:5px;
+  margin-bottom:0;
+  transform:rotate(225deg);
+}
