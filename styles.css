@@ -2059,3 +2059,50 @@ td{
   color:#002014;
   background:var(--fzo-green);
 }
+
+/* =========================================================
+   v53 - Filtros compactos y primera columna visualmente uniforme
+   ========================================================= */
+
+/* Flechas de filtro de encabezado: más pequeñas y discretas */
+.table-wrapper .column-filter-button{
+  flex:0 0 15px;
+  width:15px;
+  min-width:15px;
+  height:15px;
+  min-height:15px;
+  padding:0;
+  border:1px solid rgba(0,242,154,.34);
+  border-radius:5px;
+  background:rgba(0,242,154,.045);
+  color:var(--fzo-green);
+  font-size:7px;
+  line-height:13px;
+  box-shadow:none;
+}
+.table-wrapper .column-filter-button:hover{
+  border-color:rgba(0,242,154,.58);
+  background:rgba(0,242,154,.10);
+  color:var(--fzo-green);
+}
+.table-wrapper .column-filter-button.active{
+  border-color:var(--fzo-green);
+  background:rgba(0,242,154,.15);
+  color:var(--fzo-green);
+}
+
+/* Conserva el TK fijo, sin resaltado, borde ni sombra especial */
+.table-wrapper th[data-col="tkPadre"],
+.table-wrapper td[data-col="tkPadre"]{
+  border-right:0;
+  box-shadow:none;
+}
+.table-wrapper th[data-col="tkPadre"]{
+  background:#0d1512;
+}
+.table-wrapper td[data-col="tkPadre"]{
+  background:#080d0b;
+}
+.table-wrapper tbody tr:hover td[data-col="tkPadre"]{
+  background:#102019;
+}
