@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css?v=54" />
-  <link rel="stylesheet" href="layout-tuning.css?v=54" />
+  <link rel="stylesheet" href="layout-tuning.css?v=55" />
 </head>
 <body>
   <main class="dashboard">
@@ -86,30 +86,46 @@
       </div>
     </section>
 
-    <section class="panel detail-section">
-      <div class="panel-header detail-header">
-        <div><h2>Detalle De Tickets</h2><span id="tableCount">0 registros</span></div>
-        <div class="table-toolbar">
+    <section class="panel detail-section records">
+      <div class="panel-header detail-header records-head">
+        <div>
+          <span class="detail-eyebrow">BASE DETALLADA</span>
+          <h2>Tickets Redmine</h2>
+        </div>
+        <input id="tableSearchInput" type="search" placeholder="Buscar TK, título, responsable o estado..." aria-label="Buscar en la base detallada" />
+      </div>
+      <div id="detailViewTabs" class="detail-tabs" role="tablist" aria-label="Vistas de columnas del detalle">
+        <button type="button" class="active" data-detail-view="summary">Resumen</button>
+        <button type="button" data-detail-view="redmine">Info. Redmine</button>
+        <button type="button" data-detail-view="operational">Info. operativa</button>
+        <button type="button" data-detail-view="sprint">Sprint</button>
+        <button type="button" data-detail-view="all">Vista completa</button>
+      </div>
+      <div class="table-tools">
+        <p>
+          <b id="tableCount">0 registros</b>
+          <span>Desplaza la tabla con los botones, el scroll inferior o Shift + rueda del mouse.</span>
+        </p>
+        <div class="table-toolbar table-actions">
           <button id="scrollLeftBtn" type="button" class="small-btn">← Izquierda</button>
           <button id="scrollRightBtn" type="button" class="small-btn">Derecha →</button>
-          <div class="columns-control" id="columnsControl">
+          <div class="columns-control column-picker" id="columnsControl">
             <button id="columnsBtn" type="button" class="small-btn">Columnas ▾</button>
             <div id="columnsMenu" class="columns-menu"></div>
           </div>
         </div>
       </div>
-      <div class="scroll-hint">Puedes usar los filtros superiores y escribir dentro de cada filtro para encontrar opciones específicas. Mueve la tabla con los botones, con el scroll inferior o con Shift + rueda del mouse.</div>
-      <div id="tableWrapper" class="table-wrapper">
+      <div id="tableWrapper" class="table-wrapper table-wrap">
         <table>
           <thead><tr id="tableHeadRow"></tr></thead>
           <tbody id="ticketsTable"></tbody>
         </table>
       </div>
-      <div class="table-pagination-actions">
+      <div class="table-pagination-actions records-more">
         <button id="tableShowMoreBtn" type="button" class="table-show-more" hidden aria-expanded="false">VER MÁS</button>
       </div>
     </section>
   </main>
-  <script src="app.js?v=53"></script>
+  <script src="app.js?v=55"></script>
 </body>
 </html>
