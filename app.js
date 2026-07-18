@@ -1053,6 +1053,7 @@ function renderRecentChanges() {
   const allRows = getAppliedChangeRows();
   const rows = filterTrackingRowsByVisibleTickets(allRows);
   if (!rows.length) {
+    panel.classList.remove("recent-changes-scroll-mode");
     panel.innerHTML = `<div class="review-empty">No hay nuevos cambios</div>`;
     return;
   }
@@ -1077,11 +1078,12 @@ function renderRecentChanges() {
   const moreButtonHtml = hasMoreRows
     ? `<div class="review-more-actions">
         <button id="toggleRecentChangesLimit" type="button" class="review-more-btn">
-          ${showAllRecentChanges ? "Ver solo las últimas 10" : `Ver más actualizaciones (${rows.length - RECENT_CHANGES_INITIAL_LIMIT})`}
+          ${showAllRecentChanges ? "VER MENOS" : `VER MÁS (${rows.length - RECENT_CHANGES_INITIAL_LIMIT})`}
         </button>
       </div>`
     : "";
 
+  panel.classList.toggle("recent-changes-scroll-mode", showAllRecentChanges && hasMoreRows);
   panel.innerHTML = `${listHtml}${moreButtonHtml}`;
 
   const toggleButton = document.getElementById("toggleRecentChangesLimit");
