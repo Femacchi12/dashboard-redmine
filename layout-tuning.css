@@ -1387,3 +1387,41 @@ body{
   gap:8px;
   align-items:center;
 }
+
+
+/* =========================================================
+   v66 - Actualizaciones expandidas con desplazamiento propio
+   ========================================================= */
+#recentChangesPanel.recent-changes-scroll-mode .single-line-changes-list{
+  max-height:min(58vh,620px);
+  overflow-x:hidden;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  scrollbar-gutter:stable;
+  padding-right:7px;
+}
+#recentChangesPanel.recent-changes-scroll-mode .single-line-changes-list::-webkit-scrollbar{
+  width:10px;
+}
+#recentChangesPanel.recent-changes-scroll-mode .single-line-changes-list::-webkit-scrollbar-track{
+  border-radius:999px;
+  background:#0d1a14;
+}
+#recentChangesPanel.recent-changes-scroll-mode .single-line-changes-list::-webkit-scrollbar-thumb{
+  border:2px solid #0d1a14;
+  border-radius:999px;
+  background:var(--fzo-green);
+}
+#recentChangesPanel.recent-changes-scroll-mode .single-line-changes-list{
+  scrollbar-color:var(--fzo-green) #0d1a14;
+  scrollbar-width:thin;
+}
+#recentChangesPanel .review-more-actions{
+  position:relative;
+  z-index:2;
+}
+@media(max-width:760px){
+  #recentChangesPanel.recent-changes-scroll-mode .single-line-changes-list{
+    max-height:62vh;
+  }
+}
