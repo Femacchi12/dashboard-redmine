@@ -8,26 +8,19 @@ const REDMINE_BASE_URL = "https://redmine.fibrazo.com.co/issues/";
 const DEFAULT_AREA_FILTER = "Growth";
 let suppressDefaultAreaFilter = false;
 const COLUMN_STORAGE_KEY = "dashboardRedmineVisibleColumnsV29";
-const IMPACT_VISIBILITY_MIGRATION_KEY = "dashboardRedmineImpactVisibleV1";
-const FULL_VIEW_MIGRATION_KEY = "dashboardRedmineFullViewV1";
 
 let allTickets = [];
 let currentFilteredTickets = [];
 let sortState = { field: "edad", direction: "desc" ,visible:true};
 let visibleColumns = {};
-let columnFilters = {};
-let activeColumnFilterMenu = null;
 let dashboardStatus = { lastUpdate: "", nextUpdate: "", pendingProposals: "", lastResult: "" };
 let proposalsData = [];
 let logData = [];
 let manualChangesData = [];
 let showAllRecentChanges = false;
 const RECENT_CHANGES_INITIAL_LIMIT = 10;
-const TABLE_INITIAL_LIMIT = 8;
-let showAllTableRows = false;
 const AUTO_REFRESH_MS = 5 * 60 * 1000;
 let uiInitialized = false;
-let detailTabsInitialized = false;
 let refreshInProgress = false;
 
 const searchInput = document.getElementById("searchInput");
@@ -43,9 +36,6 @@ const columnsControl = document.getElementById("columnsControl");
 const columnsBtn = document.getElementById("columnsBtn");
 const columnsMenu = document.getElementById("columnsMenu");
 const tableHeadRow = document.getElementById("tableHeadRow");
-const tableShowMoreBtn = document.getElementById("tableShowMoreBtn");
-const tableSearchInput = document.getElementById("tableSearchInput");
-const detailViewTabs = document.getElementById("detailViewTabs");
 
 const columnsConfig = [
   { field: "tkPadre", label: "#TK Redmine", visible:true, locked: true },
@@ -56,30 +46,19 @@ const columnsConfig = [
   { field: "titulo", label: "Título", visible:true },
   { field: "objetivo", label: "Objetivo", visible:true },
   { field: "plataforma", label: "Plataforma", visible:true },
-  { field: "impacto", label: "Impacto", visible:true },
   { field: "estadoOperativo", label: "Estado Operativo", visible:true },
   { field: "responsable", label: "Responsable", visible:true },
-  { field: "fecha", label: "Fecha Creación", visible:true },
+  { field: "fecha", label: "Fecha Creación", visible:false },
   { field: "asignadoA", label: "Asignado A", visible:true },
   { field: "prioridad", label: "Prioridad Redmine", visible:true },
-  { field: "complejidad", label: "Complexity", visible:true },
-  { field: "versionPrevista", label: "Versión Prevista", visible:true },
-  { field: "sprint", label: "Sprint", visible:true },
-  { field: "origenSprint", label: "Origen en Sprint", visible:true },
-  { field: "situacionEntrega", label: "Situación de Entrega", visible:true },
-  { field: "tipoRedmine", label: "Tipo Redmine", visible:true },
-  { field: "fechaCierre", label: "Fecha Cierre", visible:true },
-  { field: "stakeholder", label: "Stakeholder", visible:true },
+  { field: "complejidad", label: "Complexity", visible:false },
+  { field: "versionPrevista", label: "Versión Prevista", visible:false },
+  { field: "tipoRedmine", label: "Tipo Redmine", visible:false },
+  { field: "fechaCierre", label: "Fecha Cierre", visible:false },
+  { field: "impacto", label: "Impacto", visible:false },
+  { field: "stakeholder", label: "Stakeholder", visible:false },
   { field: "nota", label: "Última Novedad", visible:true }
 ];
-
-const detailColumnViews = {
-  summary: ["tkPadre","edad","estadoRedmine","areaFZO","autor","titulo","estadoOperativo","responsable","asignadoA","impacto","sprint","situacionEntrega"],
-  redmine: ["tkPadre","estadoRedmine","prioridad","tipoRedmine","asignadoA","versionPrevista","fecha","fechaCierre","titulo","nota"],
-  operational: ["tkPadre","estadoOperativo","areaFZO","responsable","plataforma","impacto","stakeholder","objetivo","nota"],
-  sprint: ["tkPadre","estadoRedmine","sprint","origenSprint","situacionEntrega","versionPrevista","asignadoA","fechaCierre"],
-  all: columnsConfig.map(column => column.field)
-};
 
 const filters = {
   priority: { element: document.getElementById("priorityFilter"), field: "prioridad", placeholder: "Todas", selected: [] ,visible:true},
@@ -87,10 +66,7 @@ const filters = {
   status: { element: document.getElementById("statusFilter"), field: "estadoOperativo", placeholder: "Todos", selected: [] ,visible:true},
   area: { element: document.getElementById("areaFilter"), field: "areaFZO", placeholder: "Todas", selected: [] ,visible:true},
   author: { element: document.getElementById("authorFilter"), field: "autor", placeholder: "Todos", selected: [] ,visible:true},
-  responsible: { element: document.getElementById("responsibleFilter"), field: "responsable", placeholder: "Todos", selected: [] ,visible:true},
-  sprint: { element: document.getElementById("sprintFilter"), field: "sprint", placeholder: "Todos", selected: [], visible:true },
-  sprintOrigin: { element: document.getElementById("sprintOriginFilter"), field: "origenSprint", placeholder: "Todos", selected: [], visible:true },
-  deliveryStatus: { element: document.getElementById("deliveryStatusFilter"), field: "situacionEntrega", placeholder: "Todas", selected: [], visible:true }
+  responsible: { element: document.getElementById("responsibleFilter"), field: "responsable", placeholder: "Todos", selected: [] ,visible:true}
 };
 
 async function initDashboard() {
@@ -111,21 +87,15 @@ async function initDashboard() {
     proposalsData = proposalsResponse.ok ? csvToObjects(await proposalsResponse.text()) : [];
     logData = logResponse.ok ? csvToObjects(await logResponse.text()) : [];
     manualChangesData = manualResponse.ok ? csvToObjects(await manualResponse.text()) : [];
-    dashboardStatus = extractDashboardStatus(sheetRows, logData);
+    dashboardStatus = extractDashboardStatus(sheetRows);
     allTickets = sheetRows
       .map(normalizeTicket)
       .filter(t => t.titulo || t.tkPadre || t.autor || t.responsable || t.estadoRedmine);
 
     visibleColumns = loadVisibleColumns();
-    ensureImpactColumnVisible();
-    ensureFullColumnView();
     buildAllMultiSelects();
     renderTableHeaders();
     setupColumnSelector();
-    if (!detailTabsInitialized) {
-      setupDetailViewTabs();
-      detailTabsInitialized = true;
-    }
     applyFilters();
     renderReviewStatus();
     renderReviewTabs();
@@ -192,7 +162,7 @@ function parseCSV(text) {
 }
 
 
-function extractDashboardStatus(rows, logs = []) {
+function extractDashboardStatus(rows) {
   const getFromRow = (row, aliases) => {
     for (const alias of aliases) {
       if (Object.prototype.hasOwnProperty.call(row, alias) && String(row[alias] || "").trim() !== "") {
@@ -208,7 +178,6 @@ function extractDashboardStatus(rows, logs = []) {
   const nextAliases = ["Próxima actualización", "Proxima actualizacion", "Próxima Actualización", "Proxima Actualizacion"];
   const pendingAliases = ["Propuestas pendientes", "Propuestas Pendientes", "Pendientes aprobación", "Pendientes aprobacion"];
   const resultAliases = ["Último resultado revisión", "Ultimo resultado revision", "Último Resultado Revisión", "Ultimo Resultado Revision"];
-  let sheetStatus = { lastUpdate: "", nextUpdate: "", pendingProposals: "", lastResult: "" };
 
   for (const row of rows) {
     const lastUpdate = getFromRow(row, lastAliases);
@@ -216,91 +185,11 @@ function extractDashboardStatus(rows, logs = []) {
     const pendingProposals = getFromRow(row, pendingAliases);
     const lastResult = getFromRow(row, resultAliases);
     if (lastUpdate || nextUpdate || pendingProposals || lastResult) {
-      sheetStatus = { lastUpdate, nextUpdate, pendingProposals, lastResult };
-      break;
+      return { lastUpdate, nextUpdate, pendingProposals, lastResult };
     }
   }
 
-  // normalizeHeader removes spaces, accents and underscores, so keep these
-  // comparison values normalized too. This prevents valid logs such as
-  // "Sin cambios" from being discarded.
-  const reviewResults = [
-    "sincambios",
-    "propuestaspendientes",
-    "propuestasdetectadas",
-    "simulacionconsolidada",
-    "actualizacionconsolidadaaplicada",
-    "actualizacionautomaticaaplicada",
-    "error"
-  ];
-  const validLogs = logs
-    .map(row => ({
-      row,
-      result: normalizeHeader(getFromRow(row, ["Resultado"])),
-      date: parseBogotaLogDate(getFromRow(row, ["Fecha Ejecución", "Fecha Ejecucion", "Fecha"]))
-    }))
-    .filter(item => item.date && reviewResults.includes(item.result))
-    .sort((a, b) => a.date - b.date);
-  const latestLog = validLogs[validLogs.length - 1];
-
-  return {
-    // The status cells in Base_TKs_Redmine are the shared source of truth.
-    // Log/calculated values are only fallbacks if those cells are empty.
-    lastUpdate: sheetStatus.lastUpdate || (latestLog ? formatBogotaDateTime(latestLog.date) : ""),
-    nextUpdate: sheetStatus.nextUpdate || formatBogotaDateTime(getNextScheduledReviewDate(new Date())),
-    pendingProposals: latestLog
-      ? getFromRow(latestLog.row, ["Pendientes Totales", "Propuestas pendientes"]) || sheetStatus.pendingProposals
-      : sheetStatus.pendingProposals,
-    lastResult: latestLog
-      ? getFromRow(latestLog.row, ["Resultado"]) || sheetStatus.lastResult
-      : sheetStatus.lastResult
-  };
-}
-
-function parseBogotaLogDate(value) {
-  const text = String(value || "").trim();
-  const match = text.match(/^(\d{1,4})[\/-](\d{1,2})[\/-](\d{1,4})(?:\s*(?:-|,)?\s*(\d{1,2}):(\d{2})(?::(\d{2}))?)?/);
-  if (!match) return null;
-
-  let year;
-  let month;
-  let day;
-  if (match[1].length === 4) {
-    year = Number(match[1]);
-    month = Number(match[2]);
-    day = Number(match[3]);
-  } else {
-    day = Number(match[1]);
-    month = Number(match[2]);
-    year = Number(match[3]);
-  }
-
-  const hour = Number(match[4] || 0);
-  const minute = Number(match[5] || 0);
-  const second = Number(match[6] || 0);
-  const date = new Date(Date.UTC(year, month - 1, day, hour + 5, minute, second));
-  return Number.isNaN(date.getTime()) ? null : date;
-}
-
-function formatBogotaDateTime(date) {
-  if (!(date instanceof Date) || Number.isNaN(date.getTime())) return "--";
-  return new Intl.DateTimeFormat("es-CO", {
-    timeZone: "America/Bogota",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "numeric",
-    minute: "2-digit",
-    hour12: true
-  }).format(date);
-}
-
-function getNextScheduledReviewDate(now) {
-  const anchor = Date.UTC(2026, 6, 21, 13, 40, 0);
-  const interval = 2 * 60 * 60 * 1000;
-  const current = now instanceof Date ? now.getTime() : Date.now();
-  const steps = Math.max(0, Math.floor((current - anchor) / interval) + 1);
-  return new Date(anchor + steps * interval);
+  return { lastUpdate: "", nextUpdate: "", pendingProposals: "", lastResult: "" };
 }
 
 function normalizeTicket(ticket) {
@@ -316,9 +205,8 @@ function normalizeTicket(ticket) {
 
   const getTk = aliases => String(get(aliases) || "").replace(/\.0$/, "").trim();
 
-  const tkPadre = getTk(["#TK Redmine", "#TK Padre Redmine", "TK Redmine", "TK Padre Redmine", "TK Padre"]);
   return {
-    tkPadre,
+    tkPadre: getTk(["#TK Redmine", "#TK Padre Redmine", "TK Redmine", "TK Padre Redmine", "TK Padre"]),
     fecha: get(["Fecha Creación", "Fecha Creacion", "Fecha de creación", "Fecha creación"]),
     fechaCierre: get(["Fecha Cierre", "fecha de cierre", "Fecha de cierre"]),
     edad: Number(get(["Envejecimiento (Días)", "Envejecimiento Dias", "Envejecimiento", "Edad"])) || 0,
@@ -336,34 +224,13 @@ function normalizeTicket(ticket) {
     asignadoA: get(["asignado a", "Asignado a", "Asignado A", "Asignado"]),
     autor: get(["Autor", "autor"]) || "Sin Autor",
     versionPrevista: get(["Versión Prevista", "versión prevista", "Version prevista"]),
-    sprint: get(["Sprint"]) || "Sin info",
-    origenSprint: get(["Origen en Sprint", "Tipo Sprint"]) || "Sin info",
-    situacionEntrega: get(["Situación de Entrega", "Situacion de Entrega", "Situación de Sprint"]) || "Sin info",
     stakeholder: get(["Stakeholder"]),
     areaFZO: get(["Área FZO", "Area FZO"]) || "Sin Área"
   };
 }
 
 function normalizeHeader(value) {
-  // Google Visualization puede devolver encabezados UTF-8 interpretados como
-  // Latin-1 (por ejemplo, "Fecha AplicaciÃ³n"). Reparamos ese texto antes
-  // de comparar aliases para no perder fechas ni nombres de campos.
-  const repaired = String(value || "")
-    .replace(/Ã¡/g, "á")
-    .replace(/Ã©/g, "é")
-    .replace(/Ã­/g, "í")
-    .replace(/Ã³/g, "ó")
-    .replace(/Ãº/g, "ú")
-    .replace(/Ã±/g, "ñ")
-    .replace(/Ã/g, "Á")
-    .replace(/Ã‰/g, "É")
-    .replace(/Ã/g, "Í")
-    .replace(/Ã“/g, "Ó")
-    .replace(/Ãš/g, "Ú")
-    .replace(/Ã‘/g, "Ñ")
-    .replace(/Â/g, "");
-
-  return repaired
+  return String(value || "")
     .trim()
     .toLowerCase()
     .normalize("NFD")
@@ -480,45 +347,28 @@ function closeOtherMultiSelects(currentElement) {
 }
 
 function uniqueValues(data, field) {
-  // Todos los filtros trabajan con texto. Esto evita que columnas numéricas,
-  // como Envejecimiento, fallen al ordenar o comparar sus opciones.
-  const values = [...new Set(
-    data
-      .map(item => String(item[field] ?? "").trim())
-      .filter(Boolean)
-  )];
-  if (field === "sprint") {
-    return values.sort((a, b) => sprintDateKey(b) - sprintDateKey(a));
-  }
-  return values.sort((a, b) => a.localeCompare(b, "es"));
-}
-
-function sprintDateKey(value) {
-  const match = String(value || "").match(/(20\d{2})[\/-](\d{2})[\/-](\d{2})/);
-  if (!match) return -1;
-  return Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+  return [...new Set(data.map(item => item[field]).filter(Boolean))].sort((a, b) => a.localeCompare(b, "es"));
 }
 
 function applyFilters() {
   const search = normalizeText(searchInput.value);
+  const isExactTkSearch = /^\d+$/.test(search);
   const filtered = allTickets.filter(ticket => {
-    const text = normalizeText(`${ticket.tkPadre} ${ticket.titulo} ${ticket.objetivo} ${ticket.nota} ${ticket.responsable} ${ticket.autor} ${ticket.asignadoA} ${ticket.stakeholder} ${ticket.impacto} ${ticket.estadoRedmine} ${ticket.estadoOperativo} ${ticket.areaFZO} ${ticket.sprint} ${ticket.origenSprint} ${ticket.situacionEntrega}`);
-    return text.includes(search)
+    const text = normalizeText(`${ticket.tkPadre} ${ticket.titulo} ${ticket.objetivo} ${ticket.nota} ${ticket.responsable} ${ticket.autor} ${ticket.asignadoA} ${ticket.stakeholder} ${ticket.impacto} ${ticket.estadoRedmine} ${ticket.estadoOperativo} ${ticket.areaFZO}`);
+    const matchesSearch = isExactTkSearch
+      ? normalizeTicketKey(ticket.tkPadre) === search
+      : text.includes(search);
+    return matchesSearch
       && matchesMultiFilter(ticket, filters.priority)
       && matchesMultiFilter(ticket, filters.redmineStatus)
       && matchesMultiFilter(ticket, filters.status)
       && matchesMultiFilter(ticket, filters.area)
       && matchesMultiFilter(ticket, filters.author)
       && matchesMultiFilter(ticket, filters.responsible)
-      && matchesMultiFilter(ticket, filters.sprint)
-      && matchesMultiFilter(ticket, filters.sprintOrigin)
-      && matchesMultiFilter(ticket, filters.deliveryStatus)
-      && matchesColumnFilters(ticket)
       && matchesDateRange(ticket.fecha, createdFromFilter.value, createdToFilter.value)
       && matchesDateRange(ticket.fechaCierre, closedFromFilter.value, closedToFilter.value);
   });
 
-  showAllTableRows = false;
   currentFilteredTickets = filtered;
   updateKPIs(filtered);
   renderRedmineStatusChart(filtered);
@@ -526,12 +376,6 @@ function applyFilters() {
   renderPriorityChart(filtered);
   renderTable(filtered);
   renderReviewTabs();
-}
-
-function matchesColumnFilters(ticket) {
-  return Object.entries(columnFilters).every(([field, selected]) => {
-    return !selected.length || selected.includes(String(ticket[field] ?? ""));
-  });
 }
 
 function matchesMultiFilter(ticket, filter) {
@@ -550,7 +394,6 @@ function matchesDateRange(value, from, to) {
 function clearFilters() {
   suppressDefaultAreaFilter = true;
   searchInput.value = "";
-  if (tableSearchInput) tableSearchInput.value = "";
   createdFromFilter.value = "";
   createdToFilter.value = "";
   closedFromFilter.value = "";
@@ -558,9 +401,6 @@ function clearFilters() {
   Object.values(filters).forEach(filter => {
     filter.selected = [];
   });
-  columnFilters = {};
-  closeColumnFilterMenu();
-  updateColumnFilterButtons();
   Object.values(filters).forEach(filter => {
     buildMultiSelect(filter, filter.values || uniqueValues(allTickets, filter.field));
   });
@@ -624,179 +464,27 @@ function renderBarChart(elementId, counts) {
 }
 
 function renderTableHeaders() {
-  tableHeadRow.innerHTML = "";
-  columnsConfig.forEach(column => {
-    const th = document.createElement("th");
-    th.dataset.col = column.field;
-
-    const content = document.createElement("div");
-    content.className = "table-head-content";
-
-    const sortButton = document.createElement("button");
-    sortButton.type = "button";
-    sortButton.className = "table-sort-button";
-    sortButton.dataset.sort = column.field;
-    sortButton.textContent = column.label;
-    sortButton.addEventListener("click", () => {
-      const field = column.field;
+  tableHeadRow.innerHTML = columnsConfig.map(column => `<th data-sort="${column.field}" data-col="${column.field}">${escapeHtml(column.label)}</th>`).join("");
+  document.querySelectorAll("th[data-sort]").forEach(th => {
+    th.addEventListener("click", () => {
+      const field = th.dataset.sort;
       if (sortState.field === field) sortState.direction = sortState.direction === "asc" ? "desc" : "asc";
       else sortState = { field, direction: "asc" };
       renderTable(currentFilteredTickets);
     });
-
-    const filterButton = document.createElement("button");
-    filterButton.type = "button";
-    filterButton.className = "column-filter-button";
-    filterButton.dataset.columnFilter = column.field;
-    filterButton.title = `Filtrar ${column.label}`;
-    filterButton.setAttribute("aria-label", `Filtrar ${column.label}`);
-    filterButton.textContent = "▾";
-    filterButton.addEventListener("click", event => {
-      event.stopPropagation();
-      openColumnFilterMenu(column, filterButton);
-    });
-
-    content.appendChild(sortButton);
-    content.appendChild(filterButton);
-    th.appendChild(content);
-    tableHeadRow.appendChild(th);
-  });
-  updateColumnFilterButtons();
-}
-
-function openColumnFilterMenu(column, anchor) {
-  if (activeColumnFilterMenu?.dataset.field === column.field) {
-    closeColumnFilterMenu();
-    return;
-  }
-  closeColumnFilterMenu();
-  closeOtherMultiSelects(null);
-  columnsControl.classList.remove("open");
-
-  const menu = document.createElement("div");
-  menu.className = "column-filter-menu";
-  menu.dataset.field = column.field;
-
-  const title = document.createElement("div");
-  title.className = "column-filter-title";
-  title.textContent = column.label;
-
-  const search = document.createElement("input");
-  search.type = "text";
-  search.className = "column-filter-search";
-  search.placeholder = "Buscar opción...";
-
-  const options = document.createElement("div");
-  options.className = "column-filter-options";
-  const values = uniqueValues(allTickets, column.field);
-
-  const actions = document.createElement("div");
-  actions.className = "column-filter-actions";
-  const clear = document.createElement("button");
-  clear.type = "button";
-  clear.textContent = "Limpiar";
-  clear.addEventListener("click", () => {
-    columnFilters[column.field] = [];
-    closeColumnFilterMenu();
-    updateColumnFilterButtons();
-    applyFilters();
-  });
-  actions.appendChild(clear);
-
-  function renderOptions(term = "") {
-    options.innerHTML = "";
-    const selected = columnFilters[column.field] || [];
-    const matches = values.filter(value => normalizeText(value).includes(normalizeText(term)));
-    if (!matches.length) {
-      options.innerHTML = '<div class="column-filter-empty">Sin opciones relacionadas</div>';
-      return;
-    }
-    matches.forEach(value => {
-      const label = document.createElement("label");
-      label.className = "column-filter-option";
-      const checkbox = document.createElement("input");
-      checkbox.type = "checkbox";
-      checkbox.checked = selected.includes(value);
-      checkbox.addEventListener("change", () => {
-        const current = columnFilters[column.field] || [];
-        columnFilters[column.field] = checkbox.checked
-          ? [...new Set([...current, value])]
-          : current.filter(item => item !== value);
-        updateColumnFilterButtons();
-        applyFilters();
-      });
-      const text = document.createElement("span");
-      text.textContent = value;
-      text.title = value;
-      label.appendChild(checkbox);
-      label.appendChild(text);
-      options.appendChild(label);
-    });
-  }
-
-  search.addEventListener("input", event => renderOptions(event.target.value));
-  menu.addEventListener("click", event => event.stopPropagation());
-  menu.appendChild(title);
-  menu.appendChild(search);
-  menu.appendChild(options);
-  menu.appendChild(actions);
-  document.body.appendChild(menu);
-  activeColumnFilterMenu = menu;
-
-  const rect = anchor.getBoundingClientRect();
-  const menuWidth = Math.min(420, window.innerWidth - 24);
-  const left = Math.max(12, Math.min(rect.left, window.innerWidth - menuWidth - 12));
-  menu.style.width = `${menuWidth}px`;
-  menu.style.left = `${left}px`;
-  menu.style.top = `${Math.max(12, Math.min(rect.bottom + 6, window.innerHeight - 390))}px`;
-  renderOptions();
-  setTimeout(() => search.focus(), 0);
-}
-
-function closeColumnFilterMenu() {
-  if (activeColumnFilterMenu) activeColumnFilterMenu.remove();
-  activeColumnFilterMenu = null;
-}
-
-function updateColumnFilterButtons() {
-  document.querySelectorAll(".column-filter-button").forEach(button => {
-    const count = (columnFilters[button.dataset.columnFilter] || []).length;
-    button.classList.toggle("active", count > 0);
-    button.textContent = count ? String(count) : "▾";
   });
 }
 
 function renderTable(data) {
   const tbody = document.getElementById("ticketsTable");
   tbody.innerHTML = "";
+  document.getElementById("tableCount").textContent = `${data.length} registros`;
 
-  const sortedTickets = sortTickets([...data]);
-  const visibleTickets = showAllTableRows ? sortedTickets : sortedTickets.slice(0, TABLE_INITIAL_LIMIT);
-  const hasMoreTickets = data.length > TABLE_INITIAL_LIMIT;
-
-  document.getElementById("tableCount").textContent = hasMoreTickets
-    ? `${data.length} registros · mostrando ${visibleTickets.length}`
-    : `${data.length} registros`;
-
-  visibleTickets.forEach(ticket => {
+  sortTickets([...data]).forEach(ticket => {
     const row = document.createElement("tr");
     row.innerHTML = columnsConfig.map(column => `<td data-col="${column.field}">${renderCell(ticket, column.field)}</td>`).join("");
     tbody.appendChild(row);
   });
-
-  if (tableShowMoreBtn) {
-    tableShowMoreBtn.hidden = !hasMoreTickets;
-    tableShowMoreBtn.textContent = showAllTableRows
-      ? "VER MENOS"
-      : `VER MÁS (${data.length - TABLE_INITIAL_LIMIT})`;
-    tableShowMoreBtn.setAttribute("aria-expanded", String(showAllTableRows));
-  }
-
-  if (tableWrapper) {
-    const expandedTable = showAllTableRows && hasMoreTickets;
-    tableWrapper.classList.toggle("table-expanded", expandedTable);
-    if (!expandedTable) tableWrapper.scrollTop = 0;
-  }
 
   updateSortHeaders();
   applyColumnVisibility();
@@ -805,7 +493,7 @@ function renderTable(data) {
 function renderCell(ticket, field) {
   const value = ticket[field];
   if (field === "tkPadre") return renderTicketLink(value);
-  if (["prioridad", "estadoRedmine", "estadoOperativo", "areaFZO", "origenSprint", "situacionEntrega"].includes(field)) return `<span class="tag ${getTagClass(value)}">${escapeHtml(value)}</span>`;
+  if (["prioridad", "estadoRedmine", "estadoOperativo", "areaFZO"].includes(field)) return `<span class="tag ${getTagClass(value)}">${escapeHtml(value)}</span>`;
   if (field === "responsable") return `<span class="manual-pill">${escapeHtml(value)}</span>`;
   return escapeHtml(value);
 }
@@ -837,30 +525,9 @@ function sortTickets(data) {
 }
 
 function updateSortHeaders() {
-  document.querySelectorAll(".table-sort-button[data-sort]").forEach(button => {
-    button.classList.remove("sort-asc", "sort-desc");
-    if (button.dataset.sort === sortState.field) button.classList.add(sortState.direction === "asc" ? "sort-asc" : "sort-desc");
-  });
-}
-
-function setupDetailViewTabs() {
-  if (!detailViewTabs) return;
-  detailViewTabs.querySelectorAll("[data-detail-view]").forEach(button => {
-    button.addEventListener("click", () => {
-      const viewName = button.dataset.detailView;
-      const fields = detailColumnViews[viewName] || detailColumnViews.summary;
-      const visibleSet = new Set(fields);
-      columnsConfig.forEach(column => {
-        visibleColumns[column.field] = column.locked || visibleSet.has(column.field);
-      });
-      saveVisibleColumns();
-      setupColumnSelector();
-      applyColumnVisibility();
-      detailViewTabs.querySelectorAll("[data-detail-view]").forEach(tab => {
-        tab.classList.toggle("active", tab === button);
-      });
-      tableWrapper.scrollTo({ left: 0, behavior: "smooth" });
-    });
+  document.querySelectorAll("th[data-sort]").forEach(th => {
+    th.classList.remove("sort-asc", "sort-desc");
+    if (th.dataset.sort === sortState.field) th.classList.add(sortState.direction === "asc" ? "sort-asc" : "sort-desc");
   });
 }
 
@@ -945,22 +612,6 @@ function saveVisibleColumns() {
   localStorage.setItem(COLUMN_STORAGE_KEY, JSON.stringify(visibleColumns));
 }
 
-function ensureImpactColumnVisible() {
-  if (localStorage.getItem(IMPACT_VISIBILITY_MIGRATION_KEY) === "1") return;
-  visibleColumns.impacto = true;
-  saveVisibleColumns();
-  localStorage.setItem(IMPACT_VISIBILITY_MIGRATION_KEY, "1");
-}
-
-function ensureFullColumnView() {
-  if (localStorage.getItem(FULL_VIEW_MIGRATION_KEY) === "1") return;
-  columnsConfig.forEach(column => {
-    visibleColumns[column.field] = true;
-  });
-  saveVisibleColumns();
-  localStorage.setItem(FULL_VIEW_MIGRATION_KEY, "1");
-}
-
 function applyColumnVisibility() {
   columnsConfig.forEach(column => {
     const visible = visibleColumns[column.field] !== false || column.locked;
@@ -1010,31 +661,12 @@ function escapeHtml(value) {
     .replaceAll("'", "&#039;");
 }
 
-searchInput.addEventListener("input", () => {
-  if (tableSearchInput && tableSearchInput.value !== searchInput.value) tableSearchInput.value = searchInput.value;
-  applyFilters();
-});
-if (tableSearchInput) {
-  tableSearchInput.addEventListener("input", () => {
-    searchInput.value = tableSearchInput.value;
-    applyFilters();
-  });
-}
+searchInput.addEventListener("input", applyFilters);
 createdFromFilter.addEventListener("change", applyFilters);
 createdToFilter.addEventListener("change", applyFilters);
 closedFromFilter.addEventListener("change", applyFilters);
 closedToFilter.addEventListener("change", applyFilters);
 clearFiltersBtn.addEventListener("click", clearFilters);
-if (tableShowMoreBtn) {
-  tableShowMoreBtn.addEventListener("click", () => {
-    showAllTableRows = !showAllTableRows;
-    renderTable(currentFilteredTickets);
-    tableWrapper.scrollTop = 0;
-    if (!showAllTableRows) {
-      document.querySelector(".detail-section")?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-  });
-}
 
 columnsBtn.addEventListener("click", event => {
   event.stopPropagation();
@@ -1152,7 +784,6 @@ function renderRecentChanges() {
   const allRows = getAppliedChangeRows();
   const rows = filterTrackingRowsByVisibleTickets(allRows);
   if (!rows.length) {
-    panel.classList.remove("recent-changes-scroll-mode");
     panel.innerHTML = `<div class="review-empty">No hay nuevos cambios</div>`;
     return;
   }
@@ -1177,12 +808,11 @@ function renderRecentChanges() {
   const moreButtonHtml = hasMoreRows
     ? `<div class="review-more-actions">
         <button id="toggleRecentChangesLimit" type="button" class="review-more-btn">
-          ${showAllRecentChanges ? "VER MENOS" : `VER MÁS (${rows.length - RECENT_CHANGES_INITIAL_LIMIT})`}
+          ${showAllRecentChanges ? "Ver solo las últimas 10" : `Ver más actualizaciones (${rows.length - RECENT_CHANGES_INITIAL_LIMIT})`}
         </button>
       </div>`
     : "";
 
-  panel.classList.toggle("recent-changes-scroll-mode", showAllRecentChanges && hasMoreRows);
   panel.innerHTML = `${listHtml}${moreButtonHtml}`;
 
   const toggleButton = document.getElementById("toggleRecentChangesLimit");
@@ -1207,41 +837,9 @@ function getAppliedChangeRows() {
       return estado === "aprobado_dash" || estado === "aprobado" || estado === "visible_dash" || estado === "publicado";
     }));
 
-  // "Últimos cambios" muestra únicamente actualizaciones aplicadas
-  // que estén asociadas a un TK concreto. Los eventos generales del log
-  // y la auditoría de Cambios_Manuales no se visualizan aquí.
-  return appliedProposals
-    .filter(row => String(row.tk || "").trim() !== "")
+  return [...appliedProposals, ...manualChanges]
     .sort((a, b) => b.sortDate - a.sortDate)
     .slice(0, 80);
-}
-
-function getAppliedLogEvents() {
-  const visibleResults = new Set([
-    "cambiosaprobadosincorporaciongrowth"
-  ]);
-
-  return [...logData]
-    .filter(row => Object.values(row).some(Boolean))
-    .map((row, index) => {
-      const result = getRowValue(row, ["Resultado"]);
-      const normalizedResult = normalizeHeader(result);
-      const date = getRowValue(row, ["Fecha Ejecución", "Fecha Ejecucion", "Fecha"]);
-      const detail = getRowValue(row, ["Detalle"]);
-      return {
-        sourceType: "log",
-        tk: "",
-        title: result || "Actualización aplicada",
-        summary: detail || "Actualización aplicada y registrada en el Sheet.",
-        date,
-        link: "",
-        sortDate: parseDateLike(date) || index,
-        result: "OK",
-        count: 1,
-        normalizedResult
-      };
-    })
-    .filter(row => visibleResults.has(row.normalizedResult));
 }
 
 function isAppliedProposal(row) {
@@ -1252,30 +850,15 @@ function isAppliedProposal(row) {
   return Boolean(fechaAplicacion || resultadoAplicacion || estado.includes("aplic") || estado.includes("ejecut") || estado.includes("realiz"));
 }
 
-function resolveProposalTicket(row, parsed = null) {
-  const direct = getRowValue(row, ["#TK Redmine", "TK Redmine"]);
-  if (direct) return String(direct).replace(/\.0$/, "").trim();
-
-  if (parsed && parsed.tk) return String(parsed.tk).replace(/\.0$/, "").trim();
-
-  const link = getRowValue(row, ["Link Redmine"]);
-  const linkMatch = link.match(/\/issues\/(\d+)/i);
-  if (linkMatch) return linkMatch[1];
-
-  const proposalId = getRowValue(row, ["ID Propuesta"]);
-  const idMatch = proposalId.match(/-(\d+)(?:-[A-Z]\d+)?$/i);
-  return idMatch ? idMatch[1] : "";
-}
-
 function groupAppliedProposalsByTicket(rows) {
   const groups = new Map();
 
   rows.forEach((row, index) => {
-    const parsed = safeParseJson(getRowValue(row, ["Datos JSON Propuesto", "Datos JSON", "JSON"]));
-    const tk = resolveProposalTicket(row, parsed);
-    const applicationDate = getRowValue(row, ["Fecha Aplicación", "Fecha Aplicacion", "Fecha Detección", "Fecha Deteccion", "Fecha Correo", "Fecha"]);
+    const tk = getRowValue(row, ["#TK Redmine", "TK Redmine"]);
+    const applicationDate = getRowValue(row, ["Fecha Aplicación", "Fecha Aplicacion", "Fecha Detección", "Fecha Deteccion", "Fecha"]);
     const dateKey = normalizeDateMinute(applicationDate);
     const key = `${dateKey || "sin_fecha"}__${tk || "sin_tk"}`;
+    const parsed = safeParseJson(getRowValue(row, ["Datos JSON Propuesto", "Datos JSON", "JSON"]));
     const changes = parsed && parsed.changes && typeof parsed.changes === "object" ? parsed.changes : {};
     const summary = getRowValue(row, ["Resumen Novedad", "Detalle", "Resumen"]);
     const result = getRowValue(row, ["Resultado Aplicación", "Resultado Aplicacion"]) || "OK";
@@ -1553,7 +1136,7 @@ function renderPendingChanges(items) {
 function filterTrackingRowsByVisibleTickets(rows) {
   if (!Array.isArray(currentFilteredTickets) || !currentFilteredTickets.length) return [];
   const visibleTickets = new Set(currentFilteredTickets.map(ticket => normalizeTicketKey(ticket.tkPadre)).filter(Boolean));
-  return rows.filter(row => !normalizeTicketKey(row.tk) || visibleTickets.has(normalizeTicketKey(row.tk)));
+  return rows.filter(row => visibleTickets.has(normalizeTicketKey(row.tk)));
 }
 
 function normalizeTicketKey(value) {
@@ -1688,11 +1271,7 @@ function getRowValue(row, aliases) {
 document.addEventListener("click", () => {
   Object.values(filters).forEach(filter => filter.element.classList.remove("open"));
   columnsControl.classList.remove("open");
-  closeColumnFilterMenu();
 });
-
-window.addEventListener("resize", closeColumnFilterMenu);
-tableWrapper.addEventListener("scroll", closeColumnFilterMenu);
 
 initDashboard();
 setInterval(initDashboard, AUTO_REFRESH_MS);
