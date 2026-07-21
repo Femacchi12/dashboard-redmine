@@ -2128,3 +2128,28 @@ td{
   -webkit-line-clamp:unset;
   line-clamp:unset;
 }
+
+
+/* =========================================================
+   v78 - Última novedad amplia: texto completo en ~4 líneas
+   ========================================================= */
+.table-wrapper th[data-col="nota"],
+.table-wrapper td[data-col="nota"]{
+  width:1080px;
+  min-width:1080px;
+  max-width:1080px;
+  white-space:normal;
+}
+.table-wrapper td[data-col="nota"] .nota-cell{
+  display:block;
+  width:100%;
+  max-width:none;
+  overflow:visible;
+  white-space:normal;
+  overflow-wrap:break-word;
+  word-break:normal;
+  text-overflow:clip;
+  line-height:1.25;
+  -webkit-line-clamp:unset;
+  line-clamp:unset;
+}
