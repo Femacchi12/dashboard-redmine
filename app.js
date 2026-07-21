@@ -111,7 +111,7 @@ async function initDashboard() {
     proposalsData = proposalsResponse.ok ? csvToObjects(await proposalsResponse.text()) : [];
     logData = logResponse.ok ? csvToObjects(await logResponse.text()) : [];
     manualChangesData = manualResponse.ok ? csvToObjects(await manualResponse.text()) : [];
-    dashboardStatus = extractDashboardStatus(sheetRows);
+    dashboardStatus = extractDashboardStatus(sheetRows, logData);
     allTickets = sheetRows
       .map(normalizeTicket)
       .filter(t => t.titulo || t.tkPadre || t.autor || t.responsable || t.estadoRedmine);
@@ -192,7 +192,7 @@ function parseCSV(text) {
 }
 
 
-function extractDashboardStatus(rows) {
+function extractDashboardStatus(rows, logs = []) {
   const getFromRow = (row, aliases) => {
     for (const alias of aliases) {
       if (Object.prototype.hasOwnProperty.call(row, alias) && String(row[alias] || "").trim() !== "") {
@@ -208,6 +208,7 @@ function extractDashboardStatus(rows) {
   const nextAliases = ["Próxima actualización", "Proxima actualizacion", "Próxima Actualización", "Proxima Actualizacion"];
   const pendingAliases = ["Propuestas pendientes", "Propuestas Pendientes", "Pendientes aprobación", "Pendientes aprobacion"];
   const resultAliases = ["Último resultado revisión", "Ultimo resultado revision", "Último Resultado Revisión", "Ultimo Resultado Revision"];
+  let sheetStatus = { lastUpdate: "", nextUpdate: "", pendingProposals: "", lastResult: "" };
 
   for (const row of rows) {
     const lastUpdate = getFromRow(row, lastAliases);
@@ -215,11 +216,76 @@ function extractDashboardStatus(rows) {
     const pendingProposals = getFromRow(row, pendingAliases);
     const lastResult = getFromRow(row, resultAliases);
     if (lastUpdate || nextUpdate || pendingProposals || lastResult) {
-      return { lastUpdate, nextUpdate, pendingProposals, lastResult };
+      sheetStatus = { lastUpdate, nextUpdate, pendingProposals, lastResult };
+      break;
     }
   }
 
-  return { lastUpdate: "", nextUpdate: "", pendingProposals: "", lastResult: "" };
+  const validLogs = logs
+    .map(row => ({
+      row,
+      date: parseBogotaLogDate(getFromRow(row, ["Fecha Ejecución", "Fecha Ejecucion", "Fecha"]))
+    }))
+    .filter(item => item.date)
+    .sort((a, b) => a.date - b.date);
+  const latestLog = validLogs[validLogs.length - 1];
+
+  return {
+    lastUpdate: latestLog ? formatBogotaDateTime(latestLog.date) : sheetStatus.lastUpdate,
+    nextUpdate: formatBogotaDateTime(getNextScheduledReviewDate(new Date())),
+    pendingProposals: latestLog
+      ? getFromRow(latestLog.row, ["Pendientes Totales", "Propuestas pendientes"]) || sheetStatus.pendingProposals
+      : sheetStatus.pendingProposals,
+    lastResult: latestLog
+      ? getFromRow(latestLog.row, ["Resultado"]) || sheetStatus.lastResult
+      : sheetStatus.lastResult
+  };
+}
+
+function parseBogotaLogDate(value) {
+  const text = String(value || "").trim();
+  const match = text.match(/^(\d{1,4})[\/-](\d{1,2})[\/-](\d{1,4})(?:\s*(?:-|,)?\s*(\d{1,2}):(\d{2})(?::(\d{2}))?)?/);
+  if (!match) return null;
+
+  let year;
+  let month;
+  let day;
+  if (match[1].length === 4) {
+    year = Number(match[1]);
+    month = Number(match[2]);
+    day = Number(match[3]);
+  } else {
+    day = Number(match[1]);
+    month = Number(match[2]);
+    year = Number(match[3]);
+  }
+
+  const hour = Number(match[4] || 0);
+  const minute = Number(match[5] || 0);
+  const second = Number(match[6] || 0);
+  const date = new Date(Date.UTC(year, month - 1, day, hour + 5, minute, second));
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function formatBogotaDateTime(date) {
+  if (!(date instanceof Date) || Number.isNaN(date.getTime())) return "--";
+  return new Intl.DateTimeFormat("es-CO", {
+    timeZone: "America/Bogota",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true
+  }).format(date);
+}
+
+function getNextScheduledReviewDate(now) {
+  const anchor = Date.UTC(2026, 6, 21, 13, 40, 0);
+  const interval = 2 * 60 * 60 * 1000;
+  const current = now instanceof Date ? now.getTime() : Date.now();
+  const steps = Math.max(0, Math.floor((current - anchor) / interval) + 1);
+  return new Date(anchor + steps * interval);
 }
 
 function normalizeTicket(ticket) {
