@@ -22,6 +22,20 @@ const RECENT_CHANGES_INITIAL_LIMIT = 10;
 const AUTO_REFRESH_MS = 5 * 60 * 1000;
 let uiInitialized = false;
 let refreshInProgress = false;
+let analyticsSearchTimer = null;
+
+function trackDashboardEvent(eventName, parameters = {}) {
+  if (typeof window.gtag !== "function") return;
+  window.gtag("event", eventName, {
+    dashboard_name: "redmine",
+    ...parameters
+  });
+}
+
+function getFilterAnalyticsName(filter) {
+  const entry = Object.entries(filters).find(([, config]) => config === filter);
+  return entry ? entry[0] : filter.field;
+}
 
 const searchInput = document.getElementById("searchInput");
 const clearFiltersBtn = document.getElementById("clearFiltersBtn");
@@ -307,6 +321,10 @@ function buildMultiSelect(filter, values) {
         if (!checkbox.checked) filter.selected = filter.selected.filter(selectedValue => selectedValue !== value);
         updateMultiSelectLabel(filter);
         applyFilters();
+        trackDashboardEvent("filter_used", {
+          filter_name: getFilterAnalyticsName(filter),
+          selected_count: filter.selected.length
+        });
       });
 
       const text = document.createElement("span");
@@ -693,12 +711,63 @@ function escapeHtml(value) {
     .replaceAll("'", "&#039;");
 }
 
-searchInput.addEventListener("input", applyFilters);
-createdFromFilter.addEventListener("change", applyFilters);
-createdToFilter.addEventListener("change", applyFilters);
-closedFromFilter.addEventListener("change", applyFilters);
-closedToFilter.addEventListener("change", applyFilters);
-clearFiltersBtn.addEventListener("click", clearFilters);
+searchInput.addEventListener("input", () => {
+  applyFilters();
+  clearTimeout(analyticsSearchTimer);
+  analyticsSearchTimer = setTimeout(() => {
+    if (searchInput.value.trim()) {
+      trackDashboardEvent("dashboard_search", {
+        search_type: /^\s*\d+\s*$/.test(searchInput.value) ? "ticket_number" : "text",
+        result_count: currentFilteredTickets.length
+      });
+    }
+  }, 700);
+});
+
+[
+  [createdFromFilter, "created_from"],
+  [createdToFilter, "created_to"],
+  [closedFromFilter, "closed_from"],
+  [closedToFilter, "closed_to"]
+].forEach(([element, filterName]) => {
+  element.addEventListener("change", () => {
+    applyFilters();
+    trackDashboardEvent("date_filter_used", { filter_name: filterName });
+  });
+});
+
+clearFiltersBtn.addEventListener("click", () => {
+  clearFilters();
+  trackDashboardEvent("filters_cleared");
+});
+
+document.addEventListener("click", event => {
+  const ticketLink = event.target.closest(".ticket-link");
+  if (ticketLink) {
+    const ticketMatch = ticketLink.href.match(/\/issues\/(\d+)/);
+    trackDashboardEvent("ticket_opened", {
+      ticket_id: ticketMatch ? ticketMatch[1] : "unknown",
+      link_context: ticketLink.closest(".review-item") ? "updates" : "detail_table"
+    });
+  }
+
+  const action = event.target.closest("button, [role='tab']");
+  if (!action) return;
+
+  if (action.id === "toggleRecentChangesLimit") {
+    trackDashboardEvent("updates_list_toggled", {
+      action: showAllRecentChanges ? "show_less" : "show_more"
+    });
+  } else if (action.id === "reviewToggle") {
+    trackDashboardEvent("tracking_detail_toggled", {
+      action: document.getElementById("reviewPanel")?.classList.contains("collapsed") ? "expand" : "collapse"
+    });
+  } else if (action.id === "recentChangesTab") {
+    trackDashboardEvent("dashboard_section_view", { section_name: "recent_updates" });
+  } else if (action.id === "pendingChangesTab") {
+    trackDashboardEvent("dashboard_section_view", { section_name: "pending_approvals" });
+  }
+});
 
 columnsBtn.addEventListener("click", event => {
   event.stopPropagation();
