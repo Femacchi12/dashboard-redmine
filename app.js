@@ -353,7 +353,29 @@ function closeOtherMultiSelects(currentElement) {
 }
 
 function uniqueValues(data, field) {
-  return [...new Set(data.map(item => item[field]).filter(Boolean))].sort((a, b) => a.localeCompare(b, "es"));
+  return [...new Set(data.map(item => item[field]).filter(Boolean))].sort(compareFilterValues);
+}
+
+function compareFilterValues(a, b) {
+  const aText = String(a || "").trim();
+  const bText = String(b || "").trim();
+  const aWithoutInfo = normalizeText(aText).includes("sin_informacion") || normalizeText(aText).includes("sin_info");
+  const bWithoutInfo = normalizeText(bText).includes("sin_informacion") || normalizeText(bText).includes("sin_info");
+
+  if (aWithoutInfo !== bWithoutInfo) return aWithoutInfo ? 1 : -1;
+
+  const aDate = parseFilterPeriodStart(aText);
+  const bDate = parseFilterPeriodStart(bText);
+  if (aDate && bDate) return bDate - aDate;
+  if (aDate !== bDate) return aDate ? -1 : 1;
+
+  return aText.localeCompare(bText, "es");
+}
+
+function parseFilterPeriodStart(value) {
+  const match = String(value || "").match(/(\d{4})\/(\d{2})\/(\d{2})/);
+  if (!match) return 0;
+  return Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
 }
 
 function applyFilters() {
