@@ -1252,15 +1252,30 @@ function isAppliedProposal(row) {
   return Boolean(fechaAplicacion || resultadoAplicacion || estado.includes("aplic") || estado.includes("ejecut") || estado.includes("realiz"));
 }
 
+function resolveProposalTicket(row, parsed = null) {
+  const direct = getRowValue(row, ["#TK Redmine", "TK Redmine"]);
+  if (direct) return String(direct).replace(/\.0$/, "").trim();
+
+  if (parsed && parsed.tk) return String(parsed.tk).replace(/\.0$/, "").trim();
+
+  const link = getRowValue(row, ["Link Redmine"]);
+  const linkMatch = link.match(/\/issues\/(\d+)/i);
+  if (linkMatch) return linkMatch[1];
+
+  const proposalId = getRowValue(row, ["ID Propuesta"]);
+  const idMatch = proposalId.match(/-(\d+)(?:-[A-Z]\d+)?$/i);
+  return idMatch ? idMatch[1] : "";
+}
+
 function groupAppliedProposalsByTicket(rows) {
   const groups = new Map();
 
   rows.forEach((row, index) => {
-    const tk = getRowValue(row, ["#TK Redmine", "TK Redmine"]);
-    const applicationDate = getRowValue(row, ["Fecha Aplicación", "Fecha Aplicacion", "Fecha Detección", "Fecha Deteccion", "Fecha"]);
+    const parsed = safeParseJson(getRowValue(row, ["Datos JSON Propuesto", "Datos JSON", "JSON"]));
+    const tk = resolveProposalTicket(row, parsed);
+    const applicationDate = getRowValue(row, ["Fecha Aplicación", "Fecha Aplicacion", "Fecha Detección", "Fecha Deteccion", "Fecha Correo", "Fecha"]);
     const dateKey = normalizeDateMinute(applicationDate);
     const key = `${dateKey || "sin_fecha"}__${tk || "sin_tk"}`;
-    const parsed = safeParseJson(getRowValue(row, ["Datos JSON Propuesto", "Datos JSON", "JSON"]));
     const changes = parsed && parsed.changes && typeof parsed.changes === "object" ? parsed.changes : {};
     const summary = getRowValue(row, ["Resumen Novedad", "Detalle", "Resumen"]);
     const result = getRowValue(row, ["Resultado Aplicación", "Resultado Aplicacion"]) || "OK";
