@@ -221,13 +221,16 @@ function extractDashboardStatus(rows, logs = []) {
     }
   }
 
+  // normalizeHeader removes spaces, accents and underscores, so keep these
+  // comparison values normalized too. This prevents valid logs such as
+  // "Sin cambios" from being discarded.
   const reviewResults = [
-    "sin_cambios",
-    "propuestas_pendientes",
-    "propuestas_detectadas",
-    "simulacion_consolidada",
-    "actualizacion_consolidada_aplicada",
-    "actualizacion_automatica_aplicada",
+    "sincambios",
+    "propuestaspendientes",
+    "propuestasdetectadas",
+    "simulacionconsolidada",
+    "actualizacionconsolidadaaplicada",
+    "actualizacionautomaticaaplicada",
     "error"
   ];
   const validLogs = logs
@@ -241,8 +244,10 @@ function extractDashboardStatus(rows, logs = []) {
   const latestLog = validLogs[validLogs.length - 1];
 
   return {
-    lastUpdate: latestLog ? formatBogotaDateTime(latestLog.date) : sheetStatus.lastUpdate,
-    nextUpdate: formatBogotaDateTime(getNextScheduledReviewDate(new Date())),
+    // The status cells in Base_TKs_Redmine are the shared source of truth.
+    // Log/calculated values are only fallbacks if those cells are empty.
+    lastUpdate: sheetStatus.lastUpdate || (latestLog ? formatBogotaDateTime(latestLog.date) : ""),
+    nextUpdate: sheetStatus.nextUpdate || formatBogotaDateTime(getNextScheduledReviewDate(new Date())),
     pendingProposals: latestLog
       ? getFromRow(latestLog.row, ["Pendientes Totales", "Propuestas pendientes"]) || sheetStatus.pendingProposals
       : sheetStatus.pendingProposals,
