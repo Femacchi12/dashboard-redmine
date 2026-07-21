@@ -756,11 +756,11 @@ document.addEventListener("click", event => {
 
   if (action.id === "toggleRecentChangesLimit") {
     trackDashboardEvent("updates_list_toggled", {
-      action: showAllRecentChanges ? "show_less" : "show_more"
+      action: showAllRecentChanges ? "show_more" : "show_less"
     });
   } else if (action.id === "reviewToggle") {
     trackDashboardEvent("tracking_detail_toggled", {
-      action: document.getElementById("reviewPanel")?.classList.contains("collapsed") ? "expand" : "collapse"
+      action: document.getElementById("reviewPanel")?.classList.contains("collapsed") ? "collapse" : "expand"
     });
   } else if (action.id === "recentChangesTab") {
     trackDashboardEvent("dashboard_section_view", { section_name: "recent_updates" });
