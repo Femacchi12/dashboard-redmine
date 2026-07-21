@@ -61,12 +61,15 @@ const columnsConfig = [
 ];
 
 const filters = {
-  priority: { element: document.getElementById("priorityFilter"), field: "prioridad", placeholder: "Todas", selected: [] ,visible:true},
-  redmineStatus: { element: document.getElementById("redmineStatusFilter"), field: "estadoRedmine", placeholder: "Todos", selected: [] ,visible:true},
-  status: { element: document.getElementById("statusFilter"), field: "estadoOperativo", placeholder: "Todos", selected: [] ,visible:true},
-  area: { element: document.getElementById("areaFilter"), field: "areaFZO", placeholder: "Todas", selected: [] ,visible:true},
-  author: { element: document.getElementById("authorFilter"), field: "autor", placeholder: "Todos", selected: [] ,visible:true},
-  responsible: { element: document.getElementById("responsibleFilter"), field: "responsable", placeholder: "Todos", selected: [] ,visible:true}
+  priority: { element: document.getElementById("priorityFilter"), field: "prioridad", placeholder: "Todas", selected: [], visible: true },
+  redmineStatus: { element: document.getElementById("redmineStatusFilter"), field: "estadoRedmine", placeholder: "Todos", selected: [], visible: true },
+  status: { element: document.getElementById("statusFilter"), field: "estadoOperativo", placeholder: "Todos", selected: [], visible: true },
+  area: { element: document.getElementById("areaFilter"), field: "areaFZO", placeholder: "Todas", selected: [], visible: true },
+  deliveryStatus: { element: document.getElementById("deliveryStatusFilter"), field: "situacionEntrega", placeholder: "Todas", selected: [], visible: true },
+  author: { element: document.getElementById("authorFilter"), field: "autor", placeholder: "Todos", selected: [], visible: true },
+  responsible: { element: document.getElementById("responsibleFilter"), field: "responsable", placeholder: "Todos", selected: [], visible: true },
+  sprint: { element: document.getElementById("sprintFilter"), field: "sprint", placeholder: "Todos", selected: [], visible: true },
+  sprintOrigin: { element: document.getElementById("sprintOriginFilter"), field: "origenSprint", placeholder: "Todos", selected: [], visible: true }
 };
 
 async function initDashboard() {
@@ -225,7 +228,10 @@ function normalizeTicket(ticket) {
     autor: get(["Autor", "autor"]) || "Sin Autor",
     versionPrevista: get(["Versión Prevista", "versión prevista", "Version prevista"]),
     stakeholder: get(["Stakeholder"]),
-    areaFZO: get(["Área FZO", "Area FZO"]) || "Sin Área"
+    areaFZO: get(["Área FZO", "Area FZO"]) || "Sin Área",
+    situacionEntrega: get(["Situación de Entrega", "Situacion de Entrega"]) || "Sin información",
+    sprint: get(["Sprint", "Situación Sprint", "Situacion Sprint"]) || "Sin información",
+    origenSprint: get(["Origen en Sprint", "Origen Sprint"]) || "Sin información"
   };
 }
 
@@ -363,8 +369,11 @@ function applyFilters() {
       && matchesMultiFilter(ticket, filters.redmineStatus)
       && matchesMultiFilter(ticket, filters.status)
       && matchesMultiFilter(ticket, filters.area)
+      && matchesMultiFilter(ticket, filters.deliveryStatus)
       && matchesMultiFilter(ticket, filters.author)
       && matchesMultiFilter(ticket, filters.responsible)
+      && matchesMultiFilter(ticket, filters.sprint)
+      && matchesMultiFilter(ticket, filters.sprintOrigin)
       && matchesDateRange(ticket.fecha, createdFromFilter.value, createdToFilter.value)
       && matchesDateRange(ticket.fechaCierre, closedFromFilter.value, closedToFilter.value);
   });
