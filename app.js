@@ -495,6 +495,7 @@ function renderCell(ticket, field) {
   if (field === "tkPadre") return renderTicketLink(value);
   if (["prioridad", "estadoRedmine", "estadoOperativo", "areaFZO"].includes(field)) return `<span class="tag ${getTagClass(value)}">${escapeHtml(value)}</span>`;
   if (field === "responsable") return `<span class="manual-pill">${escapeHtml(value)}</span>`;
+  if (field === "nota") return `<div class="nota-cell" title="${escapeHtml(value)}">${escapeHtml(value)}</div>`;
   return escapeHtml(value);
 }
 
