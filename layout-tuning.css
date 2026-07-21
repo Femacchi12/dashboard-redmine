@@ -1425,3 +1425,30 @@ body{
     max-height:62vh;
   }
 }
+
+
+/* =========================================================
+   v79 - Última novedad: ancho efectivo no comprimible
+   ========================================================= */
+.table-wrap th[data-col="nota"],
+.table-wrap td[data-col="nota"],
+.table-wrapper th[data-col="nota"],
+.table-wrapper td[data-col="nota"]{
+  box-sizing:border-box;
+  width:1250px!important;
+  min-width:1250px!important;
+  max-width:1250px!important;
+  white-space:normal!important;
+}
+.table-wrap td[data-col="nota"] .nota-cell,
+.table-wrapper td[data-col="nota"] .nota-cell{
+  display:block;
+  width:100%;
+  max-width:none!important;
+  white-space:normal!important;
+  overflow:visible!important;
+  overflow-wrap:break-word;
+  word-break:normal;
+  text-overflow:clip!important;
+  line-height:1.25;
+}
