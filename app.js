@@ -762,9 +762,9 @@ document.addEventListener("click", event => {
     trackDashboardEvent("tracking_detail_toggled", {
       action: document.getElementById("reviewPanel")?.classList.contains("collapsed") ? "collapse" : "expand"
     });
-  } else if (action.id === "recentChangesTab") {
+  } else if (action.id === "tabRecentChanges") {
     trackDashboardEvent("dashboard_section_view", { section_name: "recent_updates" });
-  } else if (action.id === "pendingChangesTab") {
+  } else if (action.id === "tabPendingChanges") {
     trackDashboardEvent("dashboard_section_view", { section_name: "pending_approvals" });
   }
 });
