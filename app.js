@@ -221,12 +221,22 @@ function extractDashboardStatus(rows, logs = []) {
     }
   }
 
+  const reviewResults = [
+    "sin_cambios",
+    "propuestas_pendientes",
+    "propuestas_detectadas",
+    "simulacion_consolidada",
+    "actualizacion_consolidada_aplicada",
+    "actualizacion_automatica_aplicada",
+    "error"
+  ];
   const validLogs = logs
     .map(row => ({
       row,
+      result: normalizeHeader(getFromRow(row, ["Resultado"])),
       date: parseBogotaLogDate(getFromRow(row, ["Fecha Ejecución", "Fecha Ejecucion", "Fecha"]))
     }))
-    .filter(item => item.date)
+    .filter(item => item.date && reviewResults.includes(item.result))
     .sort((a, b) => a.date - b.date);
   const latestLog = validLogs[validLogs.length - 1];
 
