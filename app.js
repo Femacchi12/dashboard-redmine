@@ -1189,9 +1189,43 @@ function getAppliedChangeRows() {
       return estado === "aprobado_dash" || estado === "aprobado" || estado === "visible_dash" || estado === "publicado";
     }));
 
-  return [...appliedProposals, ...manualChanges]
+  // Algunas intervenciones consolidadas quedaron auditadas únicamente en
+  // Log_Redmine (sin filas aplicadas equivalentes en Propuestas_Redmine).
+  // Se incluyen como eventos globales para que la trazabilidad del dashboard
+  // no se detenga en la última propuesta individual registrada.
+  const appliedLogEvents = getAppliedLogEvents();
+
+  return [...appliedProposals, ...manualChanges, ...appliedLogEvents]
     .sort((a, b) => b.sortDate - a.sortDate)
     .slice(0, 80);
+}
+
+function getAppliedLogEvents() {
+  const visibleResults = new Set([
+    "cambiosaprobadosincorporaciongrowth"
+  ]);
+
+  return [...logData]
+    .filter(row => Object.values(row).some(Boolean))
+    .map((row, index) => {
+      const result = getRowValue(row, ["Resultado"]);
+      const normalizedResult = normalizeHeader(result);
+      const date = getRowValue(row, ["Fecha Ejecución", "Fecha Ejecucion", "Fecha"]);
+      const detail = getRowValue(row, ["Detalle"]);
+      return {
+        sourceType: "log",
+        tk: "",
+        title: result || "Actualización aplicada",
+        summary: detail || "Actualización aplicada y registrada en el Sheet.",
+        date,
+        link: "",
+        sortDate: parseDateLike(date) || index,
+        result: "OK",
+        count: 1,
+        normalizedResult
+      };
+    })
+    .filter(row => visibleResults.has(row.normalizedResult));
 }
 
 function isAppliedProposal(row) {
@@ -1488,7 +1522,7 @@ function renderPendingChanges(items) {
 function filterTrackingRowsByVisibleTickets(rows) {
   if (!Array.isArray(currentFilteredTickets) || !currentFilteredTickets.length) return [];
   const visibleTickets = new Set(currentFilteredTickets.map(ticket => normalizeTicketKey(ticket.tkPadre)).filter(Boolean));
-  return rows.filter(row => visibleTickets.has(normalizeTicketKey(row.tk)));
+  return rows.filter(row => !normalizeTicketKey(row.tk) || visibleTickets.has(normalizeTicketKey(row.tk)));
 }
 
 function normalizeTicketKey(value) {
