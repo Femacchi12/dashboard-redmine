@@ -777,10 +777,10 @@ function setupReviewToggle() {
 }
 
 function renderReviewTabs() {
-  const pendingItems = [
-    ...groupPendingProposalsByTicket(getPendingProposals()),
-    ...groupPendingManualChangesByTicket(getPendingManualChanges())
-  ].sort((a, b) => b.sortDate - a.sortDate);
+  // Solo las propuestas del flujo de aprobación deben aparecer como pendientes.
+  // Cambios_Manuales es una bitácora de ediciones ya realizadas, no una cola de aprobación.
+  const pendingItems = groupPendingProposalsByTicket(getPendingProposals())
+    .sort((a, b) => b.sortDate - a.sortDate);
   const pendingInfo = renderPendingChanges(pendingItems);
   renderRecentChanges();
 
