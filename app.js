@@ -1189,13 +1189,11 @@ function getAppliedChangeRows() {
       return estado === "aprobado_dash" || estado === "aprobado" || estado === "visible_dash" || estado === "publicado";
     }));
 
-  // Algunas intervenciones consolidadas quedaron auditadas únicamente en
-  // Log_Redmine (sin filas aplicadas equivalentes en Propuestas_Redmine).
-  // Se incluyen como eventos globales para que la trazabilidad del dashboard
-  // no se detenga en la última propuesta individual registrada.
-  const appliedLogEvents = getAppliedLogEvents();
-
-  return [...appliedProposals, ...manualChanges, ...appliedLogEvents]
+  // "Últimos cambios" muestra únicamente actualizaciones aplicadas
+  // que estén asociadas a un TK concreto. Los eventos generales del log
+  // y la auditoría de Cambios_Manuales no se visualizan aquí.
+  return appliedProposals
+    .filter(row => String(row.tk || "").trim() !== "")
     .sort((a, b) => b.sortDate - a.sortDate)
     .slice(0, 80);
 }
