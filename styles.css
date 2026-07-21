@@ -2106,3 +2106,24 @@ td{
 .table-wrapper tbody tr:hover td[data-col="tkPadre"]{
   background:#102019;
 }
+
+
+/* =========================================================
+   v76 - Última novedad más ancha y máximo cuatro líneas
+   ========================================================= */
+.table-wrapper th[data-col="nota"],
+.table-wrapper td[data-col="nota"]{
+  width:620px;
+  min-width:620px;
+  max-width:620px;
+}
+.table-wrapper td[data-col="nota"] .nota-cell{
+  display:-webkit-box;
+  overflow:hidden;
+  white-space:normal;
+  overflow-wrap:anywhere;
+  line-height:1.25;
+  -webkit-box-orient:vertical;
+  -webkit-line-clamp:4;
+  line-clamp:4;
+}
