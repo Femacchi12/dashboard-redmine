@@ -2109,21 +2109,22 @@ td{
 
 
 /* =========================================================
-   v76 - Última novedad más ancha y máximo cuatro líneas
+   v77 - Última novedad completa, sin recortes
    ========================================================= */
 .table-wrapper th[data-col="nota"],
 .table-wrapper td[data-col="nota"]{
-  width:620px;
-  min-width:620px;
-  max-width:620px;
+  width:720px;
+  min-width:720px;
+  max-width:720px;
+  white-space:normal;
 }
 .table-wrapper td[data-col="nota"] .nota-cell{
-  display:-webkit-box;
-  overflow:hidden;
+  display:block;
+  overflow:visible;
   white-space:normal;
   overflow-wrap:anywhere;
+  word-break:break-word;
   line-height:1.25;
-  -webkit-box-orient:vertical;
-  -webkit-line-clamp:4;
-  line-clamp:4;
+  -webkit-line-clamp:unset;
+  line-clamp:unset;
 }
