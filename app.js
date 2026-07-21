@@ -877,9 +877,12 @@ function getAppliedChangeRows() {
 function isAppliedProposal(row) {
   const estado = normalizeText(getRowValue(row, ["Estado Propuesta", "Estado"]));
   const fechaAplicacion = getRowValue(row, ["Fecha Aplicación", "Fecha Aplicacion"]);
-  const resultadoAplicacion = getRowValue(row, ["Resultado Aplicación", "Resultado Aplicacion"]);
-  if (estado === "pendiente_aprobacion") return false;
-  return Boolean(fechaAplicacion || resultadoAplicacion || estado.includes("aplic") || estado.includes("ejecut") || estado.includes("realiz"));
+  const resultadoAplicacion = normalizeText(getRowValue(row, ["Resultado Aplicación", "Resultado Aplicacion"]));
+  const excludedStates = ["pendiente_aprobacion", "desestimado_historico", "desestimado_duplicado", "rechazado"];
+  const excludedResults = ["no_aplicado", "sin_cambio_duplicado"];
+  if (excludedStates.some(value => estado === value || estado.startsWith(value))) return false;
+  if (excludedResults.includes(resultadoAplicacion)) return false;
+  return Boolean(fechaAplicacion || resultadoAplicacion === "ok" || estado.includes("aplic") || estado.includes("ejecut") || estado.includes("realiz"));
 }
 
 function groupAppliedProposalsByTicket(rows) {
