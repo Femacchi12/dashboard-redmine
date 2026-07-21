@@ -1,7 +1,7 @@
 
 const SHEET_ID = "1dMNdIcdRSjGE5RZmBN-ygSmu4O4S6060jd4pkq33-qE";
 const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=764769884`;
-const PROPOSALS_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=764769885`;
+const PROPOSALS_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=764769885`;
 const LOG_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=764769886`;
 const MANUAL_CHANGES_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=764769888`;
 const REDMINE_BASE_URL = "https://redmine.fibrazo.com.co/issues/";
