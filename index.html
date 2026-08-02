@@ -24,7 +24,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=87" />
+  <link rel="stylesheet" href="styles.css?v=88" />
   <link rel="stylesheet" href="layout-tuning.css?v=79" />
 </head>
 <body class="auth-pending">
@@ -57,18 +57,18 @@
         <div class="badge">Dashboard TKs Redmine</div>
         <p>Seguimiento operativo de tickets, responsables, estados y entregas.</p>
       </div>
-      <div class="header-account" id="headerAccount" hidden>
-        <span id="signedInEmail"></span>
-        <button id="signOutBtn" type="button">Cerrar sesión</button>
-      </div>
       <div class="header-updates">
         <div class="update-card compact-update-card">
           <span>Última actualización</span>
           <strong id="lastAiReview">--</strong>
         </div>
-        <div class="update-card compact-update-card">
+        <div class="update-card compact-update-card next-update-card">
           <span>Próxima actualización</span>
           <strong id="nextAiReview">--</strong>
+          <div class="header-account" id="headerAccount" hidden>
+            <span id="signedInEmail"></span>
+            <button id="signOutBtn" type="button">Cerrar sesión</button>
+          </div>
         </div>
       </div>
     </header>
