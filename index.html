@@ -27,11 +27,25 @@
   <link rel="stylesheet" href="styles.css?v=78" />
   <link rel="stylesheet" href="layout-tuning.css?v=79" />
 </head>
-<body>
+<body class="auth-pending">
   <!-- Google Tag Manager (noscript) -->
   <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-K6NM6BM7"
   height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <!-- End Google Tag Manager (noscript) -->
+  <section id="authGate" class="auth-gate" aria-live="polite">
+    <div class="auth-card">
+      <div class="auth-brand">
+        <span class="brand-wordmark">fibrazo</span>
+        <span class="brand-divider"></span>
+        <span class="brand-area">GROWTH</span>
+      </div>
+      <h1 id="authTitle">Dashboard TKs Redmine</h1>
+      <p id="authMessage">Inicia sesión con tu cuenta autorizada para continuar.</p>
+      <button id="googleSignInBtn" class="auth-primary-button" type="button">Continuar con Google</button>
+      <button id="changeAccountBtn" class="auth-secondary-button" type="button" hidden>Cambiar de cuenta</button>
+      <p class="auth-access-note">Acceso exclusivo para cuentas @fibrazo.com y la cuenta excepcional autorizada.</p>
+    </div>
+  </section>
   <main class="dashboard">
     <header class="header">
       <div class="header-main">
@@ -42,6 +56,10 @@
         </div>
         <div class="badge">Dashboard TKs Redmine</div>
         <p>Seguimiento operativo de tickets, responsables, estados y entregas.</p>
+      </div>
+      <div class="header-account" id="headerAccount" hidden>
+        <span id="signedInEmail"></span>
+        <button id="signOutBtn" type="button">Cerrar sesión</button>
       </div>
       <div class="header-updates">
         <div class="update-card compact-update-card">
@@ -144,6 +162,6 @@
     <span>FIBRAZO · Growth &amp; TKs Redmine</span>
     <a href="https://docs.google.com/spreadsheets/d/1dMNdIcdRSjGE5RZmBN-ygSmu4O4S6060jd4pkq33-qE/edit?gid=764769884#gid=764769884" target="_blank" rel="noopener noreferrer">Fuente: Base_TKs_Redmine. ↗</a>
   </footer>
-  <script src="app.js?v=86"></script>
+  <script type="module" src="auth.js?v=87"></script>
 </body>
 </html>
