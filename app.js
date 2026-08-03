@@ -3,6 +3,7 @@ const SHEET_ID = "1dMNdIcdRSjGE5RZmBN-ygSmu4O4S6060jd4pkq33-qE";
 const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=764769884`;
 const PROPOSALS_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=764769885`;
 const LOG_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=764769886`;
+const CONFIG_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=764769887`;
 const MANUAL_CHANGES_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=764769888`;
 const REDMINE_BASE_URL = "https://redmine.fibrazo.com.co/issues/";
 const DEFAULT_AREA_FILTER = "Growth";
@@ -91,10 +92,11 @@ async function initDashboard() {
   refreshInProgress = true;
   try {
     const cacheBust = Date.now();
-    const [mainResponse, proposalsResponse, logResponse, manualResponse] = await Promise.all([
+    const [mainResponse, proposalsResponse, logResponse, configResponse, manualResponse] = await Promise.all([
       fetch(`${SHEET_URL}&cacheBust=${cacheBust}`, { cache: "no-store" }),
       fetch(`${PROPOSALS_URL}&cacheBust=${cacheBust}`, { cache: "no-store" }),
       fetch(`${LOG_URL}&cacheBust=${cacheBust}`, { cache: "no-store" }),
+      fetch(`${CONFIG_URL}&cacheBust=${cacheBust}`, { cache: "no-store" }),
       fetch(`${MANUAL_CHANGES_URL}&cacheBust=${cacheBust}`, { cache: "no-store" })
     ]);
     if (!mainResponse.ok) throw new Error(`Error HTTP ${mainResponse.status}`);
@@ -104,7 +106,9 @@ async function initDashboard() {
     proposalsData = proposalsResponse.ok ? csvToObjects(await proposalsResponse.text()) : [];
     logData = logResponse.ok ? csvToObjects(await logResponse.text()) : [];
     manualChangesData = manualResponse.ok ? csvToObjects(await manualResponse.text()) : [];
-    dashboardStatus = extractDashboardStatus(sheetRows);
+    const scriptStatus = extractDashboardStatus(sheetRows);
+    const configRows = configResponse.ok ? csvToObjects(await configResponse.text()) : [];
+    dashboardStatus = extractDashboardRefreshStatus(configRows, scriptStatus);
     allTickets = sheetRows
       .map(normalizeTicket)
       .filter(t => t.titulo || t.tkPadre || t.autor || t.responsable || t.estadoRedmine);
@@ -207,6 +211,22 @@ function extractDashboardStatus(rows) {
   }
 
   return { lastUpdate: "", nextUpdate: "", pendingProposals: "", lastResult: "" };
+}
+
+function extractDashboardRefreshStatus(rows, fallbackStatus) {
+  const config = new Map();
+  rows.forEach(row => {
+    const key = String(row.Clave || row.clave || "").trim().toUpperCase();
+    const value = String(row.Valor || row.valor || "").trim();
+    if (key) config.set(key, value);
+  });
+
+  return {
+    lastUpdate: config.get("DASHBOARD_LAST_UPDATE") || fallbackStatus.lastUpdate || "",
+    nextUpdate: config.get("DASHBOARD_NEXT_UPDATE") || fallbackStatus.nextUpdate || "",
+    pendingProposals: fallbackStatus.pendingProposals || "",
+    lastResult: config.get("DASHBOARD_LAST_RESULT") || fallbackStatus.lastResult || ""
+  };
 }
 
 function normalizeTicket(ticket) {
