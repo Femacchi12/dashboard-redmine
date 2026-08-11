@@ -12,6 +12,7 @@ const COLUMN_STORAGE_KEY = "dashboardRedmineVisibleColumnsV29";
 
 let allTickets = [];
 let currentFilteredTickets = [];
+let currentTableTickets = [];
 let sortState = { field: "edad", direction: "desc" ,visible:true};
 let visibleColumns = {};
 let dashboardStatus = { lastUpdate: "", nextUpdate: "", pendingProposals: "", lastResult: "" };
@@ -39,6 +40,7 @@ function getFilterAnalyticsName(filter) {
 }
 
 const searchInput = document.getElementById("searchInput");
+const tableSearchInput = document.getElementById("tableSearchInput");
 const clearFiltersBtn = document.getElementById("clearFiltersBtn");
 const createdFromFilter = document.getElementById("createdFromFilter");
 const createdToFilter = document.getElementById("createdToFilter");
@@ -443,8 +445,29 @@ function applyFilters() {
   renderRedmineStatusChart(filtered);
   renderStatusChart(filtered);
   renderPriorityChart(filtered);
-  renderTable(filtered);
+  applyTableSearch();
   renderReviewTabs();
+}
+
+function applyTableSearch() {
+  const search = normalizeText(tableSearchInput?.value || "");
+  const isExactTkSearch = /^\d+$/.test(search);
+
+  currentTableTickets = currentFilteredTickets.filter(ticket => {
+    if (!search) return true;
+    if (isExactTkSearch) return normalizeTicketKey(ticket.tkPadre) === search;
+
+    const searchableText = normalizeText([
+      ticket.tkPadre,
+      ticket.titulo,
+      ticket.responsable,
+      ticket.estadoRedmine,
+      ticket.estadoOperativo
+    ].join(" "));
+    return searchableText.includes(search);
+  });
+
+  renderTable(currentTableTickets);
 }
 
 function matchesMultiFilter(ticket, filter) {
@@ -463,6 +486,7 @@ function matchesDateRange(value, from, to) {
 function clearFilters() {
   suppressDefaultAreaFilter = true;
   searchInput.value = "";
+  if (tableSearchInput) tableSearchInput.value = "";
   createdFromFilter.value = "";
   createdToFilter.value = "";
   closedFromFilter.value = "";
@@ -539,7 +563,7 @@ function renderTableHeaders() {
       const field = th.dataset.sort;
       if (sortState.field === field) sortState.direction = sortState.direction === "asc" ? "desc" : "asc";
       else sortState = { field, direction: "asc" };
-      renderTable(currentFilteredTickets);
+      renderTable(currentTableTickets);
     });
   });
 }
@@ -739,6 +763,19 @@ searchInput.addEventListener("input", () => {
       trackDashboardEvent("dashboard_search", {
         search_type: /^\s*\d+\s*$/.test(searchInput.value) ? "ticket_number" : "text",
         result_count: currentFilteredTickets.length
+      });
+    }
+  }, 700);
+});
+
+tableSearchInput?.addEventListener("input", () => {
+  applyTableSearch();
+  clearTimeout(analyticsSearchTimer);
+  analyticsSearchTimer = setTimeout(() => {
+    if (tableSearchInput.value.trim()) {
+      trackDashboardEvent("detail_table_search", {
+        search_type: /^\s*\d+\s*$/.test(tableSearchInput.value) ? "ticket_number" : "text",
+        result_count: currentTableTickets.length
       });
     }
   }, 700);
