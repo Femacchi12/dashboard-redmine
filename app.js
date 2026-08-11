@@ -451,18 +451,26 @@ function applyFilters() {
 
 function applyTableSearch() {
   const search = normalizeText(tableSearchInput?.value || "");
-  const isExactTkSearch = /^\d+$/.test(search);
 
   currentTableTickets = currentFilteredTickets.filter(ticket => {
     if (!search) return true;
-    if (isExactTkSearch) return normalizeTicketKey(ticket.tkPadre) === search;
 
     const searchableText = normalizeText([
       ticket.tkPadre,
-      ticket.titulo,
-      ticket.responsable,
+      ticket.edad,
       ticket.estadoRedmine,
-      ticket.estadoOperativo
+      ticket.impacto,
+      ticket.areaFZO,
+      ticket.autor,
+      ticket.responsable,
+      ticket.titulo,
+      ticket.objetivo,
+      ticket.plataforma,
+      ticket.estadoOperativo,
+      ticket.asignadoA,
+      ticket.fecha,
+      ticket.prioridad,
+      ticket.fechaCierre
     ].join(" "));
     return searchableText.includes(search);
   });
