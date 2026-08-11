@@ -71,7 +71,7 @@ function loadDashboard() {
   if (dashboardLoaded) return;
   dashboardLoaded = true;
   const script = document.createElement("script");
-  script.src = "app.js?v=91";
+  script.src = "app.js?v=92";
   script.defer = true;
   script.onerror = () => {
     dashboardLoaded = false;
