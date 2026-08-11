@@ -21,6 +21,8 @@ let logData = [];
 let manualChangesData = [];
 let showAllRecentChanges = false;
 const RECENT_CHANGES_INITIAL_LIMIT = 10;
+const DETAIL_TABLE_INITIAL_LIMIT = 10;
+let showAllTableRows = false;
 const AUTO_REFRESH_MS = 5 * 60 * 1000;
 let uiInitialized = false;
 let refreshInProgress = false;
@@ -53,6 +55,7 @@ const columnsControl = document.getElementById("columnsControl");
 const columnsBtn = document.getElementById("columnsBtn");
 const columnsMenu = document.getElementById("columnsMenu");
 const tableHeadRow = document.getElementById("tableHeadRow");
+const tableShowMoreBtn = document.getElementById("tableShowMoreBtn");
 
 const columnsConfig = [
   { field: "tkPadre", label: "#TK Redmine", visible:true, locked: true },
@@ -475,6 +478,7 @@ function applyTableSearch() {
     return searchableText.includes(search);
   });
 
+  showAllTableRows = false;
   renderTable(currentTableTickets);
 }
 
@@ -581,11 +585,24 @@ function renderTable(data) {
   tbody.innerHTML = "";
   document.getElementById("tableCount").textContent = `${data.length} registros`;
 
-  sortTickets([...data]).forEach(ticket => {
+  const sortedTickets = sortTickets([...data]);
+  const visibleTickets = showAllTableRows
+    ? sortedTickets
+    : sortedTickets.slice(0, DETAIL_TABLE_INITIAL_LIMIT);
+
+  visibleTickets.forEach(ticket => {
     const row = document.createElement("tr");
     row.innerHTML = columnsConfig.map(column => `<td data-col="${column.field}">${renderCell(ticket, column.field)}</td>`).join("");
     tbody.appendChild(row);
   });
+
+  const hasMoreRows = data.length > DETAIL_TABLE_INITIAL_LIMIT;
+  tableShowMoreBtn.hidden = !hasMoreRows;
+  tableShowMoreBtn.textContent = showAllTableRows
+    ? "VER MENOS"
+    : `MOSTRAR MÁS (${data.length - DETAIL_TABLE_INITIAL_LIMIT})`;
+  tableShowMoreBtn.setAttribute("aria-expanded", String(showAllTableRows));
+  tableWrapper.classList.toggle("table-expanded", showAllTableRows && hasMoreRows);
 
   updateSortHeaders();
   applyColumnVisibility();
@@ -787,6 +804,16 @@ tableSearchInput?.addEventListener("input", () => {
       });
     }
   }, 700);
+});
+
+tableShowMoreBtn?.addEventListener("click", () => {
+  showAllTableRows = !showAllTableRows;
+  renderTable(currentTableTickets);
+  tableWrapper.scrollTop = 0;
+  trackDashboardEvent("detail_table_rows_toggled", {
+    action: showAllTableRows ? "show_more" : "show_less",
+    result_count: currentTableTickets.length
+  });
 });
 
 [
