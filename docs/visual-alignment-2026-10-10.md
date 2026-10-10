@@ -58,3 +58,21 @@ La capa de alineación es reversible retirando su referencia de `index.html`.
 3. Verificar página publicada en escritorio y móvil.
 4. Verificar filtros, KPI, gráficos, seguimiento y tabla con una sesión autorizada.
 5. Registrar resultado y evidencia en `Cambios_Dashboard`.
+
+
+## Resultado de implementación y verificación
+
+**Implementado en main:** commit `617e1c1863f3552d906aff5d9e834e370f10f193`, integrado mediante PR #4.
+
+**Verificado:**
+- El diff de implementación afecta únicamente `index.html` y tres archivos nuevos de diseño/documentación.
+- `app.js` y `auth.js` permanecen sin cambios.
+- GitHub Pages ejecutó `pages build and deployment` para el commit de implementación con resultado `success`.
+- Producción sirve `brand-alignment.css?v=1` con los tokens #43FFA5, #000000, #58595B y la paleta complementaria documentada.
+- Producción expone `theme-color #000000`.
+- La pantalla pública de autenticación se inspeccionó visualmente: carga sin errores visibles, branding legible, composición centrada, fondo negro/superficie gris oscura/acento verde y sin overflow horizontal evidente.
+- La capa incluye breakpoints móviles para KPI, gráficos, encabezado y scroll interno de tabla.
+
+**Pendiente real:**
+- Smoke test autenticado en producción de filtros, KPI, gráficos, seguimiento y tabla detallada en escritorio y móvil. El navegador de verificación no tiene una sesión Google autorizada guardada; no se infiere este resultado.
+- Limpieza futura opcional de HEX/tipografía heredados en `styles.css` y `layout-tuning.css`. No bloquea el estándar actual porque `brand-alignment.css` se carga al final y centraliza el override vigente.
