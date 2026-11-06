@@ -16,3 +16,5 @@
 html body :is(.view-switch,.mini-switch) button.active,html body :is(.view-switch,.mini-switch) button[aria-selected=true],html body button.city-chip.active,html body button.city-chip[aria-pressed=true]{background:#00e69a!important;background-image:none!important;color:#000!important;border-color:#00e69a!important}
 html body :is(.view-switch,.mini-switch) button.active *,html body button.city-chip.active *{color:#000!important}
 @media(max-width:600px){.fz-shared-header{padding:10px 12px!important}.fz-shared-header .hero-copy h1,.fz-shared-header .header-main .badge{font-size:17px!important}.fz-shared-header .hero-brand span,.fz-shared-header .brand-wordmark{font-size:20px!important}.fz-shared-nav a,.fz-shared-nav span{min-height:40px;padding:8px 11px}}
+
+html body .view-switch.view-switch.view-switch button.active,html body .mini-switch.mini-switch.mini-switch button.active{background:#00e69a!important;background-image:none!important;border-color:#00e69a!important;color:#000!important}
