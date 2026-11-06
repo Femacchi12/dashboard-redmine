@@ -1,0 +1,4 @@
+/* Ajustes visuales aprobados: controles, avatar y subtítulos. */
+html body .fz-shared-menu>summary{width:42px;height:42px;box-sizing:border-box;background:#050605!important;color:#fff!important;border:0!important;box-shadow:none!important}
+html body :is(.view-switch,.mini-switch) button:not(.active):not([aria-selected=true]){background:#050605!important;color:#fff!important}
+html body :is(.view-switch,.mini-switch) button:is(.active,[aria-selected=true],[aria-pressed=true]){background:#00e69a!important;color:#000!important;border-color:#00e69a!important}
