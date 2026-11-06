@@ -1,0 +1,20 @@
+/* Cabecera compacta y selección explícita VIS-021 */
+.fz-shared-header{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:16px!important;min-height:74px!important;padding:12px 18px!important;margin:10px 0 14px!important;background:#101312!important;border:1px solid #353b38!important;border-radius:18px!important;overflow:visible!important;font-family:Montserrat,system-ui,sans-serif!important}
+.fz-shared-header:after,.fz-shared-header .orbit{display:none!important}.fz-shared-header .hero-copy,.fz-shared-header .header-main{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;min-width:0}
+.fz-shared-header .hero-copy h1,.fz-shared-header .header-main .badge{font-size:20px!important;font-weight:800!important;color:#f7f8f7!important;margin:0!important;padding:0!important;border:0!important;background:transparent!important;letter-spacing:0!important}
+.fz-shared-header .hero-copy>p,.fz-shared-header .header-main>p{display:none!important}
+.fz-shared-header .hero-brand,.fz-shared-header .brand-lockup{display:flex;align-items:center;gap:8px}
+.fz-shared-header .hero-brand span,.fz-shared-header .brand-wordmark{font-weight:800!important;font-size:23px!important;color:#f7f8f7!important;letter-spacing:-.04em!important}
+.fz-shared-header .hero-brand b,.fz-shared-header .brand-area{font-size:10px!important;color:#43ffa5!important}
+.fz-shared-menu{position:relative;flex:none}.fz-shared-menu>summary{width:42px;height:42px;display:grid;place-items:center;cursor:pointer;border:1px solid #48514c;border-radius:50%;background:#050605;color:#fff;font-weight:700;list-style:none}.fz-shared-menu>summary::-webkit-details-marker{display:none}
+.fz-shared-menu-card{position:absolute;right:0;top:calc(100% + 8px);width:min(320px,85vw);z-index:1000;display:grid;gap:10px;padding:16px;background:#171a19;border:1px solid #48514c;border-radius:14px;box-shadow:0 12px 25px #0008}
+.fz-shared-menu-card :is(.header-account,.auth-session,.header-updates,.update-cards){position:static!important;width:100%!important;min-width:0!important;max-width:none!important;margin:0!important;display:grid;gap:8px}.fz-shared-menu-card [hidden]{display:none!important}
+.fz-shared-menu-card button{width:auto!important;min-height:38px}
+.fz-shared-nav{display:flex;gap:5px;align-items:center;overflow-x:auto;margin:0 0 14px;padding:0}
+.fz-shared-nav a,.fz-shared-nav span{flex:none;display:inline-flex;align-items:center;min-height:42px;padding:9px 13px;color:#fff;text-decoration:none;border:1px solid #48514c;border-radius:999px;background:#050605;font:700 12px Montserrat,system-ui,sans-serif}
+.fz-shared-nav [aria-current=page]{color:#000;background:#00e69a;border-color:#00e69a}
+html body :is(.view-switch,.mini-switch) button.active,html body :is(.view-switch,.mini-switch) button[aria-selected=true],html body button.city-chip.active,html body button.city-chip[aria-pressed=true]{background:#00e69a!important;background-image:none!important;color:#000!important;border-color:#00e69a!important}
+html body :is(.view-switch,.mini-switch) button.active *,html body button.city-chip.active *{color:#000!important}
+@media(max-width:600px){.fz-shared-header{padding:10px 12px!important}.fz-shared-header .hero-copy h1,.fz-shared-header .header-main .badge{font-size:17px!important}.fz-shared-header .hero-brand span,.fz-shared-header .brand-wordmark{font-size:20px!important}.fz-shared-nav a,.fz-shared-nav span{min-height:40px;padding:8px 11px}}
+
+html body .view-switch.view-switch.view-switch button.active,html body .mini-switch.mini-switch.mini-switch button.active{background:#00e69a!important;background-image:none!important;border-color:#00e69a!important;color:#000!important}
