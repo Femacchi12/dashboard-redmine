@@ -40,9 +40,12 @@ function normalizeEmail(value) {
   return String(value || "").trim().toLowerCase();
 }
 
-function isAuthorizedEmail(value) {
-  const email = normalizeEmail(value);
-  return email.endsWith(ALLOWED_DOMAIN) || ALLOWED_EMAILS.has(email);
+async function isAuthorizedUser(user) {
+  if(!user?.emailVerified)return false;
+  const token=await user.getIdToken();
+  const r=await fetch("https://fibrazo-forms.vercel.app/api/dashboard-permissions?dashboard=redmine",{headers:{Authorization:"Bearer "+token},cache:"no-store"});
+  if(!r.ok)throw new Error("POLICY_UNAVAILABLE");
+  return !!(await r.json()).allowed;
 }
 
 function showLogin(message = "Inicia sesión con tu cuenta autorizada para continuar.") {
@@ -134,11 +137,15 @@ try {
 
 onAuthStateChanged(auth, async user => {
   if (!user) {
+    window.dispatchEvent(new Event("fibrazo-dashboard-signout"));
     showLogin();
     return;
   }
 
-  if (!isAuthorizedEmail(user.email)) {
+  let allowed;
+  try { allowed=await isAuthorizedUser(user); }
+  catch (_) { showLogin("No fue posible verificar los permisos. Intenta nuevamente."); return; }
+  if (!allowed) {
     const deniedEmail = normalizeEmail(user.email);
     await signOut(auth);
     showDenied(deniedEmail);
@@ -146,4 +153,5 @@ onAuthStateChanged(auth, async user => {
   }
 
   showDashboard(user);
+  window.dispatchEvent(new CustomEvent("fibrazo-dashboard-auth",{detail:{user,dashboard:"redmine"}}));
 });
